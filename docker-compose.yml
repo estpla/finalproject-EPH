@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: gymflow-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gymflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - gymflow-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: gymflow-pgadmin
+    restart: always
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gymflow.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - gymflow-network
+    depends_on:
+      - postgres
+
+networks:
+  gymflow-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  pgadmin_data:

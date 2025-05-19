@@ -10,6 +10,7 @@
 7. [Pull requests](#7-pull-requests)
 7. [Pull requests](#7-pull-requests)
 8. [Extra - Sprint planning](#8-extra---sprint-planning)
+
 ---
 
 ## 0. Ficha del proyecto

@@ -11,6 +11,8 @@ Puedes añadir adicionalmente la conversación completa como link o archivo adju
 5. [Historias de usuario](#5-historias-de-usuario)
 6. [Tickets de trabajo](#6-tickets-de-trabajo)
 7. [Pull requests](#7-pull-requests)
+8. [Extra - Sprint planning](#8-extra---sprint-planning)
+9. [Backend](#9-backend)
 
 ---
 
@@ -222,3 +224,20 @@ Un breve resumen que refleje la esencia de la tarea. Debe ser lo suficientemente
 **Prompt 1:**
 
 Ahora dame hora una planificación por sprint para el proyecto.
+
+### 9. Backend
+
+**Prompt 1:**
+
+Eres un experto en proyectos Nodejs de backend. Basándote en toda la información que hay en el fichero README.md, quiero empezar la estructura del proyecto backend en la carpeta "backend/". Importante que tenga los siguientes componentes:
+
+- Javascript
+- Node.js
+- Express
+- Prisma
+- Websockets
+- Jest
+
+Quiero que hagas una buena separación de ficheros/carpetas, mira en el fichero README.md para ello.
+
+Crea aunque sea una ruta de ejemplo.
