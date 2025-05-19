@@ -241,3 +241,11 @@ Eres un experto en proyectos Nodejs de backend. Basándote en toda la informaci�
 Quiero que hagas una buena separación de ficheros/carpetas, mira en el fichero README.md para ello.
 
 Crea aunque sea una ruta de ejemplo.
+
+**Prompt 2:**
+
+Continuemos ahora añadiendo las rutas de auth
+
+**Prompt 3:**
+
+Continuemos ahora con las rutas de atletas. Recuerda actualizar el fichero backend/README.md con los cambios que realices. README.md

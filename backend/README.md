@@ -10,13 +10,14 @@ Este documento explica cómo configurar y arrancar el proyecto backend de GymFlo
 
 ## Pasos para arrancar el proyecto
 
-1. Clonar el repositorio
+### 1. Clonar el repositorio
 
 ```bash
-git clone <url-del-repositorio>cd finalproject-EPH/backend
+git clone https://github.com/estpla/finalproject-EPH
+cd finalproject-EPH/backend
 ```
 
-2. Configurar variables de entorno
+### 2. Configurar variables de entorno
 
 Copia el archivo .env.example a .env y modifica las variables según tu entorno:
 
@@ -30,7 +31,7 @@ Edita el archivo .env con tus configuraciones. Para desarrollo local con Docker,
 DATABASE_URL="postgresql://username:password@localhost:5432/gymflow?schema=public"
 ```
 
-3. Iniciar la base de datos con Docker Compose
+### 3. Iniciar la base de datos con Docker Compose
 
 Desde la carpeta raíz del proyecto, ejecuta:
 
@@ -44,13 +45,13 @@ Esto iniciará:
     - Email: admin@gymflow.com
     - Contraseña: admin
 
-4. Instalar dependencias
+### 4. Instalar dependencias
 
 ```bash
 npm install
 ```
 
-5. Configurar Prisma
+### 5. Configurar Prisma
 
 Genera el cliente de Prisma:
 
@@ -70,7 +71,7 @@ Carga los datos iniciales (seed):
 npm run prisma:seed
 ```
 
-6. Iniciar el servidor
+### 6. Iniciar el servidor
 
 Para desarrollo (con hot reload):
 
@@ -149,20 +150,33 @@ Si recibes un error como "Socket.IO no ha sido inicializado":
 2. Asegúrate de que el orden de inicialización sea: primero el servidor HTTP, luego Socket.IO
 
 ## Endpoints API
-
 La API estará disponible en http://localhost:3000/api
 
-Endpoints principales:
+### Endpoints de estado
+
 - GET /api/status - Estado de la API
-- GET /api/sessions/active - Sesiones activas
+
+### Endpoints de sesiones
+
+- GET /api/sessions/active - Obtener sesiones activas
 - POST /api/sessions/start - Iniciar sesión
 - POST /api/sessions/end/:sessionId - Finalizar sesión
-- GET /api/athletes - Listar atletas
-- GET /api/workouts - Listar entrenamientos
-- GET /api/progress - Ver progreso
+- GET /api/sessions/room/status - Obtener estado de la sala
+
+### Endpoints de atletas
+
+- GET /api/athletes - Listar todos los atletas
+- GET /api/athletes/:id - Obtener un atleta por ID
+- POST /api/athletes - Crear un nuevo atleta (requiere autenticación)
+- PUT /api/athletes/:id - Actualizar un atleta (requiere autenticación)
+- DELETE /api/athletes/:id - Eliminar un atleta (requiere autenticación)
+- POST /api/athletes/:id/assign-workout - Asignar un plan de entrenamiento a un atleta (requiere autenticación)
+
+### Endpoints de autenticación
+
 - POST /api/auth/login - Iniciar sesión de usuario
 - POST /api/auth/register - Registrar nuevo usuario
 - POST /api/auth/logout - Cerrar sesión de usuario
-- GET /api/auth/me - Obtener usuario actual
+- GET /api/auth/me - Obtener usuario actual (requiere autenticación)
 
-Para más detalles sobre los endpoints disponibles, consulta la documentación de la API o el código en la carpeta routes.
+Para más detalles sobre los endpoints disponibles, consulta la documentación de la API o el código en la carpeta routes .

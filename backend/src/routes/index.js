@@ -3,14 +3,14 @@ const router = express.Router();
 
 // Importar rutas específicas
 const sessionRoutes = require('./sessionRoutes');
-//const athleteRoutes = require('./athleteRoutes');
+const athleteRoutes = require('./athleteRoutes');
 //const workoutRoutes = require('./workoutRoutes');
 //const progressRoutes = require('./progressRoutes');
 const authRoutes = require('./authRoutes');
 
 // Configurar rutas
 router.use('/sessions', sessionRoutes);
-//router.use('/athletes', athleteRoutes);
+router.use('/athletes', athleteRoutes);
 //router.use('/workouts', workoutRoutes);
 //router.use('/progress', progressRoutes);
 router.use('/auth', authRoutes);
