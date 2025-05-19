@@ -1,23 +1,17 @@
 const express = require('express');
 const router = express.Router();
-
-// Importar rutas específicas
-const sessionRoutes = require('./sessionRoutes');
-const athleteRoutes = require('./athleteRoutes');
-//const workoutRoutes = require('./workoutRoutes');
-//const progressRoutes = require('./progressRoutes');
 const authRoutes = require('./authRoutes');
+const athleteRoutes = require('./athleteRoutes');
+const workoutRoutes = require('./workoutRoutes');
 
-// Configurar rutas
-router.use('/sessions', sessionRoutes);
-router.use('/athletes', athleteRoutes);
-//router.use('/workouts', workoutRoutes);
-//router.use('/progress', progressRoutes);
+// Rutas principales
 router.use('/auth', authRoutes);
+router.use('/athletes', athleteRoutes);
+router.use('/workouts', workoutRoutes);
 
-// Ruta de prueba/estado
-router.get('/status', (req, res) => {
-  res.json({ status: 'API funcionando correctamente' });
+// Ruta de prueba para verificar que la API está funcionando
+router.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'API funcionando correctamente' });
 });
 
 module.exports = router;

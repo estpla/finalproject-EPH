@@ -249,3 +249,7 @@ Continuemos ahora añadiendo las rutas de auth
 **Prompt 3:**
 
 Continuemos ahora con las rutas de atletas. Recuerda actualizar el fichero backend/README.md con los cambios que realices. README.md
+
+**Prompt 4:**
+
+Continuemos ahora con las rutas de workouts. Recuerda actualizar el fichero backend/README.md con los cambios que realices. README.md

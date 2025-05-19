@@ -179,4 +179,12 @@ La API estará disponible en http://localhost:3000/api
 - POST /api/auth/logout - Cerrar sesión de usuario
 - GET /api/auth/me - Obtener usuario actual (requiere autenticación)
 
-Para más detalles sobre los endpoints disponibles, consulta la documentación de la API o el código en la carpeta routes .
+### Endpoints de Workouts (Planes de entrenamiento)
+
+- `GET /api/workouts` - Obtener todos los planes de entrenamiento
+- `GET /api/workouts/:id` - Obtener un plan de entrenamiento por ID
+- `POST /api/workouts` - Crear un nuevo plan de entrenamiento
+- `PUT /api/workouts/:id` - Actualizar un plan de entrenamiento existente
+- `DELETE /api/workouts/:id` - Eliminar un plan de entrenamiento
+
+Para más detalles sobre los endpoints disponibles, consulta la documentación de la API o el código en la carpeta routes.
