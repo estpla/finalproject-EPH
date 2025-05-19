@@ -107,7 +107,24 @@ El servidor estará disponible en: http://localhost:3000
 ## Estructura del proyecto
 
 ```plaintext
-/backend├── src/│   ├── controllers/         # Lógica de negocio│   ├── routes/              # Rutas Express│   ├── services/            # Lógica de dominio│   ├── middlewares/         # Auth, errores, validaciones│   ├── sockets/             # Configuración WebSocket│   ├── utils/               # Funciones auxiliares│   ├── prisma/              # Esquema y cliente de Prisma│   │   ├── schema.prisma│   │   └── seed.js│   ├── index.js             # Punto de entrada principal│   └── server.js            # Setup de Express, middleware, rutas├── tests/                   # Carpeta para tests con Jest│   ├── unit/                # Tests unitarios│   ├── integration/         # Tests de integración│   └── setup.js             # Configuración para tests└── ...
+/backend
+├── src/
+│   ├── controllers/         # Lógica de negocio
+│   ├── routes/              # Rutas Express
+│   ├── services/            # Lógica de dominio
+│   ├── middlewares/         # Auth, errores, validaciones
+│   ├── sockets/             # Configuración WebSocket
+│   ├── utils/               # Funciones auxiliares
+│   ├── prisma/              # Esquema y cliente de Prisma
+│   │   ├── schema.prisma
+│   │   └── seed.js
+│   ├── index.js             # Punto de entrada principal
+│   └── server.js            # Setup de Express, middleware, rutas
+├── tests/                   # Carpeta para tests con Jest
+│   ├── unit/                # Tests unitarios
+│   ├── integration/         # Tests de integración
+│   └── setup.js             # Configuración para tests
+└── ...
 ```
 
 ## Solución de problemas comunes
@@ -125,6 +142,12 @@ Si las migraciones fallan:
 1. Elimina la carpeta prisma/migrations (si existe)
 2. Reinicia el proceso: npm run prisma:migrate
 
+### Error con Socket.IO no inicializado
+
+Si recibes un error como "Socket.IO no ha sido inicializado":
+1. Verifica que el archivo index.js inicialice correctamente Socket.IO después de que el servidor HTTP esté escuchando
+2. Asegúrate de que el orden de inicialización sea: primero el servidor HTTP, luego Socket.IO
+
 ## Endpoints API
 
 La API estará disponible en http://localhost:3000/api
@@ -134,5 +157,12 @@ Endpoints principales:
 - GET /api/sessions/active - Sesiones activas
 - POST /api/sessions/start - Iniciar sesión
 - POST /api/sessions/end/:sessionId - Finalizar sesión
+- GET /api/athletes - Listar atletas
+- GET /api/workouts - Listar entrenamientos
+- GET /api/progress - Ver progreso
+- POST /api/auth/login - Iniciar sesión de usuario
+- POST /api/auth/register - Registrar nuevo usuario
+- POST /api/auth/logout - Cerrar sesión de usuario
+- GET /api/auth/me - Obtener usuario actual
 
 Para más detalles sobre los endpoints disponibles, consulta la documentación de la API o el código en la carpeta routes.
