@@ -1,0 +1,103 @@
+# Dependencias
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+.nyc_output
+
+# Producción
+/build
+/dist
+/out
+
+# Entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Prisma
+/prisma/migrations/
+/prisma/*.db
+/prisma/*.db-journal
+
+# Editores y IDEs
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Archivos de sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archivos temporales
+*.swp
+*.swo
+.temp
+.tmp
+.cache
+
+# Archivos de configuración local
+*.local
+
+# Docker
+docker-compose.override.yml
+
+# Archivos específicos de React
+.eslintcache
+
+# Archivos específicos de Next.js
+.next/
+out/
+.vercel
+
+# Archivos específicos de Vue
+.nuxt
+dist
+
+# Archivos específicos de Angular
+.angular/cache
+.sass-cache/
+
+# Archivos específicos de TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Archivos específicos de Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# Archivos de coverage
+backend/coverage/*
