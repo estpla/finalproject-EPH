@@ -101,3 +101,13 @@ next-env.d.ts
 
 # Archivos de coverage
 backend/coverage/*
+
+# Archivos específicos de Vite
+# Directorio de caché de Vite
+.vite/
+# Archivos de debug de Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Archivos específicos de Bun
+bun.lockb
