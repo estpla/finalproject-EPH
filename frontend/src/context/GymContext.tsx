@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { Athlete, WorkoutPlan } from "../types";
@@ -18,11 +19,12 @@ interface GymContextType {
   updateAthleteProgress: (athleteId: string, progressPercentage: number) => void;
   updateExerciseCompletion: (athleteId: string, exerciseId: string, completedSets: number) => void;
   assignWorkoutToAthlete: (athleteId: string, workoutPlanId: string) => void;
-  addWorkoutPlan: (workoutPlan: WorkoutPlan) => void;
-  updateWorkoutPlan: (workoutPlan: WorkoutPlan) => void;
-  removeWorkoutPlan: (workoutPlanId: string) => void;
+  addWorkoutPlan: (workoutPlan: WorkoutPlan) => Promise<void>;
+  updateWorkoutPlan: (workoutPlan: WorkoutPlan) => Promise<void>;
+  removeWorkoutPlan: (workoutPlanId: string) => Promise<void>;
   loading: boolean;
   fetchAthletes: () => Promise<void>;
+  fetchWorkoutPlans: () => Promise<void>;
 }
 
 const GymContext = createContext<GymContextType | undefined>(undefined);
@@ -49,7 +51,6 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const data = await response.json();
       
       // Transformar los datos del backend al formato que espera el frontend
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const formattedAthletes: Athlete[] = data.map((athlete: any) => ({
         id: athlete.id.toString(),
         name: athlete.name,
@@ -80,9 +81,58 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // Cargar atletas al montar el componente
+  // Función para obtener planes de entrenamiento desde la API
+  const fetchWorkoutPlans = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/workouts`);
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener los planes de entrenamiento');
+      }
+      
+      const data = await response.json();
+      
+      // Transformar los datos del backend al formato que espera el frontend
+      const formattedWorkoutPlans: WorkoutPlan[] = data.map((workout: any) => {
+        // Mapear los ejercicios
+        const exercises = workout.exercises.map((ex: any) => ({
+          id: ex.exerciseId.toString(),
+          name: ex.exercise.name,
+          sets: ex.sets,
+          reps: ex.reps,
+          weight: ex.weight || 0,
+          restTime: ex.restTime || 60,
+          completed: 0
+        }));
+        
+        return {
+          id: workout.id.toString(),
+          name: workout.name,
+          description: workout.description || '',
+          exercises: exercises,
+          totalExercises: exercises.length,
+          completedExercises: 0
+        };
+      });
+      
+      setWorkoutPlans(formattedWorkoutPlans);
+    } catch (error) {
+      console.error('Error al cargar planes de entrenamiento:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los planes de entrenamiento",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar datos al montar el componente
   useEffect(() => {
     fetchAthletes();
+    fetchWorkoutPlans();
   }, []);
 
   // Atletas
@@ -122,7 +172,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         currentWorkout: newAthlete.assignedWorkout ? {
           id: newAthlete.assignedWorkout.id.toString(),
           name: newAthlete.assignedWorkout.name,
-          // description: newAthlete.assignedWorkout.description || '',
+          description: newAthlete.assignedWorkout.description || '',
           exercises: [],
           totalExercises: 0,
           completedExercises: 0
@@ -395,87 +445,240 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   // Planes de entrenamiento
-  const addWorkoutPlan = (workoutPlan: WorkoutPlan) => {
-    setWorkoutPlans((prev) => [...prev, workoutPlan]);
-    toast({
-      title: "Plan creado",
-      description: `El plan "${workoutPlan.name}" ha sido creado exitosamente.`,
-    });
-  };
+  const addWorkoutPlan = async (workoutPlan: WorkoutPlan) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error('No se ha encontrado un token de autenticación.');
+      }
 
-  const updateWorkoutPlan = (workoutPlan: WorkoutPlan) => {
-    setWorkoutPlans((prev) =>
-      prev.map((plan) =>
-        plan.id === workoutPlan.id ? workoutPlan : plan
-      )
-    );
+      // Preparar los datos para el backend
+      const workoutData = {
+        name: workoutPlan.name,
+        description: workoutPlan.description,
+        exercises: workoutPlan.exercises.map(ex => ({
+          name: ex.name,
+          sets: ex.sets,
+          reps: ex.reps,
+          weight: ex.weight,
+          restTime: ex.restTime
+        }))
+      };
 
-    // Actualizar el plan en atletas que lo estén usando
-    setAthletes((prev) =>
-      prev.map((athlete) => {
-        if (athlete.currentWorkout && athlete.currentWorkout.id === workoutPlan.id) {
-          // Mantener el progreso actual del atleta
-          const updatedExercises = workoutPlan.exercises.map(ex => {
-            const existingEx = athlete.currentWorkout?.exercises.find(e => e.id === ex.id);
-            return existingEx ? existingEx : { ...ex, completed: 0 };
-          });
+      const response = await fetch(`${API_URL}/api/workouts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(workoutData),
+      });
 
-          const updatedWorkout = {
-            ...workoutPlan,
-            exercises: updatedExercises,
-            totalExercises: updatedExercises.length,
-            completedExercises: updatedExercises.reduce(
-              (acc, ex) => acc + (ex.completed === ex.sets ? 1 : 0),
-              0
-            ),
-          };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al crear el plan de entrenamiento');
+      }
 
-          return {
-            ...athlete,
-            currentWorkout: updatedWorkout,
-          };
-        }
-        return athlete;
-      })
-    );
+      const newWorkout = await response.json();
+      
+      // Transformar el workout recibido al formato del frontend
+      const formattedWorkout: WorkoutPlan = {
+        id: newWorkout.id.toString(),
+        name: newWorkout.name,
+        description: newWorkout.description || '',
+        exercises: newWorkout.exercises.map((ex: any) => ({
+          id: ex.exerciseId.toString(),
+          name: ex.exercise.name,
+          sets: ex.sets,
+          reps: ex.reps,
+          weight: ex.weight || 0,
+          restTime: ex.restTime || 60,
+          completed: 0
+        })),
+        totalExercises: newWorkout.exercises.length,
+        completedExercises: 0
+      };
 
-    toast({
-      title: "Plan actualizado",
-      description: `El plan "${workoutPlan.name}" ha sido actualizado.`,
-    });
-  };
-
-  const removeWorkoutPlan = (workoutPlanId: string) => {
-    const plan = workoutPlans.find((w) => w.id === workoutPlanId);
-    
-    // Verificar si algún atleta está usando este plan
-    const athletesWithPlan = athletes.filter(
-      (a) => a.currentWorkout?.id === workoutPlanId
-    );
-    
-    if (athletesWithPlan.length > 0) {
-      // Quitar el plan a los atletas que lo están usando
-      setAthletes((prev) =>
-        prev.map((athlete) =>
-          athlete.currentWorkout?.id === workoutPlanId
-            ? { ...athlete, currentWorkout: null, progressPercentage: 0, status: "not_started" }
-            : athlete
-        )
-      );
+      setWorkoutPlans((prev) => [...prev, formattedWorkout]);
       
       toast({
-        title: "Advertencia",
-        description: `${athletesWithPlan.length} atleta(s) tenían asignado este plan y han sido actualizados.`,
+        title: "Plan creado",
+        description: `El plan "${formattedWorkout.name}" ha sido creado exitosamente.`,
       });
-    }
-    
-    // Eliminar el plan
-    if (plan) {
-      setWorkoutPlans((prev) => prev.filter((w) => w.id !== workoutPlanId));
+    } catch (error) {
+      console.error('Error al añadir plan de entrenamiento:', error);
       toast({
-        title: "Plan eliminado",
-        description: `El plan "${plan.name}" ha sido eliminado.`,
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al crear el plan de entrenamiento",
+        variant: "destructive"
       });
+      throw error;
+    }
+  };
+
+  const updateWorkoutPlan = async (workoutPlan: WorkoutPlan) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error('No se ha encontrado un token de autenticación.');
+      }
+
+      // Preparar los datos para el backend
+      const workoutData = {
+        name: workoutPlan.name,
+        description: workoutPlan.description,
+        exercises: workoutPlan.exercises.map(ex => ({
+          exerciseId: ex.id,
+          name: ex.name,
+          sets: ex.sets,
+          reps: ex.reps,
+          weight: ex.weight,
+          restTime: ex.restTime
+        }))
+      };
+
+      const response = await fetch(`${API_URL}/api/workouts/${workoutPlan.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(workoutData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar el plan de entrenamiento');
+      }
+
+      const updatedWorkout = await response.json();
+      
+      // Transformar el workout recibido al formato del frontend
+      const formattedWorkout: WorkoutPlan = {
+        id: updatedWorkout.id.toString(),
+        name: updatedWorkout.name,
+        description: updatedWorkout.description || '',
+        exercises: updatedWorkout.exercises.map((ex: any) => ({
+          id: ex.exerciseId.toString(),
+          name: ex.exercise.name,
+          sets: ex.sets,
+          reps: ex.reps,
+          weight: ex.weight || 0,
+          restTime: ex.restTime || 60,
+          completed: 0
+        })),
+        totalExercises: updatedWorkout.exercises.length,
+        completedExercises: 0
+      };
+
+      setWorkoutPlans((prev) =>
+        prev.map((plan) =>
+          plan.id === workoutPlan.id ? formattedWorkout : plan
+        )
+      );
+
+      // Actualizar el plan en atletas que lo estén usando
+      setAthletes((prev) =>
+        prev.map((athlete) => {
+          if (athlete.currentWorkout && athlete.currentWorkout.id === workoutPlan.id) {
+            // Mantener el progreso actual del atleta
+            const updatedExercises = formattedWorkout.exercises.map(ex => {
+              const existingEx = athlete.currentWorkout?.exercises.find(e => e.id === ex.id);
+              return existingEx ? existingEx : { ...ex, completed: 0 };
+            });
+
+            const updatedWorkout = {
+              ...formattedWorkout,
+              exercises: updatedExercises,
+              totalExercises: updatedExercises.length,
+              completedExercises: updatedExercises.reduce(
+                (acc, ex) => acc + (ex.completed === ex.sets ? 1 : 0),
+                0
+              ),
+            };
+
+            return {
+              ...athlete,
+              currentWorkout: updatedWorkout,
+            };
+          }
+          return athlete;
+        })
+      );
+
+      toast({
+        title: "Plan actualizado",
+        description: `El plan "${formattedWorkout.name}" ha sido actualizado.`,
+      });
+    } catch (error) {
+      console.error('Error al actualizar plan de entrenamiento:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al actualizar el plan de entrenamiento",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  const removeWorkoutPlan = async (workoutPlanId: string) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error('No se ha encontrado un token de autenticación.');
+      }
+
+      const response = await fetch(`${API_URL}/api/workouts/${workoutPlanId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al eliminar el plan de entrenamiento');
+      }
+
+      const plan = workoutPlans.find((w) => w.id === workoutPlanId);
+      
+      // Verificar si algún atleta está usando este plan
+      const athletesWithPlan = athletes.filter(
+        (a) => a.currentWorkout?.id === workoutPlanId
+      );
+      
+      if (athletesWithPlan.length > 0) {
+        // Quitar el plan a los atletas que lo están usando
+        setAthletes((prev) =>
+          prev.map((athlete) =>
+            athlete.currentWorkout?.id === workoutPlanId
+              ? { ...athlete, currentWorkout: null, progressPercentage: 0, status: "not_started" }
+              : athlete
+          )
+        );
+        
+        toast({
+          title: "Advertencia",
+          description: `${athletesWithPlan.length} atleta(s) tenían asignado este plan y han sido actualizados.`,
+        });
+      }
+      
+      // Eliminar el plan
+      if (plan) {
+        setWorkoutPlans((prev) => prev.filter((w) => w.id !== workoutPlanId));
+        toast({
+          title: "Plan eliminado",
+          description: `El plan "${plan.name}" ha sido eliminado.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error al eliminar plan de entrenamiento:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al eliminar el plan de entrenamiento",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
@@ -494,7 +697,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateWorkoutPlan,
     removeWorkoutPlan,
     loading,
-    fetchAthletes
+    fetchAthletes,
+    fetchWorkoutPlans
   };
 
   return <GymContext.Provider value={value}>{children}</GymContext.Provider>;

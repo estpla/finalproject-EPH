@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useGym } from "@/context/GymContext";
 import { useAuth } from "@/context/AuthContext";
 import WorkoutPlanCard from "./WorkoutPlanCard";
@@ -16,18 +16,27 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Trash2, Edit } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { WorkoutPlan } from "@/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const WorkoutPlansView = () => {
-  const { workoutPlans, removeWorkoutPlan } = useGym();
+  const { workoutPlans, removeWorkoutPlan, loading, fetchWorkoutPlans } = useGym();
   const { isAuthenticated } = useAuth();
   const [planToDelete, setPlanToDelete] = React.useState<WorkoutPlan | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
-  const handleDeletePlan = () => {
+  const handleDeletePlan = async () => {
     if (planToDelete) {
-      removeWorkoutPlan(planToDelete.id);
-      setPlanToDelete(null);
+      try {
+        setIsDeleting(true);
+        await removeWorkoutPlan(planToDelete.id);
+      } catch (error) {
+        console.error("Error al eliminar el plan:", error);
+      } finally {
+        setIsDeleting(false);
+        setPlanToDelete(null);
+      }
     }
   };
 
@@ -38,6 +47,22 @@ const WorkoutPlansView = () => {
         <p className="text-muted-foreground mb-4">
           Debes iniciar sesión para acceder a la gestión de planes de entrenamiento.
         </p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Planes de entrenamiento</h2>
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-64 w-full rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -75,9 +100,9 @@ const WorkoutPlansView = () => {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="bg-background"
+                      size="icon"
+                      variant="ghost"
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-full"
                       onClick={() => setPlanToDelete(plan)}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
@@ -95,8 +120,9 @@ const WorkoutPlansView = () => {
                       <AlertDialogAction 
                         className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                         onClick={handleDeletePlan}
+                        disabled={isDeleting}
                       >
-                        Eliminar
+                        {isDeleting ? "Eliminando..." : "Eliminar"}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

@@ -15,6 +15,7 @@ export type Exercise = {
 export type WorkoutPlan = {
   id: string;
   name: string;
+  description: string;
   exercises: Exercise[];
   totalExercises: number;
   completedExercises: number;
