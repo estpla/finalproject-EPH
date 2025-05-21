@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useGym } from "@/context/GymContext";
 import { Button } from "@/components/ui/button";
@@ -13,57 +12,64 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Athlete } from "@/types";
 
-const AddAthleteDialog = () => {
-  const { addAthlete } = useGym();
+interface EditAthleteDialogProps {
+  athlete: Athlete;
+}
+
+const EditAthleteDialog: React.FC<EditAthleteDialogProps> = ({ athlete }) => {
+  const { updateAthlete } = useGym();
   const [open, setOpen] = React.useState(false);
-  const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
+  const [name, setName] = React.useState(athlete.name);
+  const [email, setEmail] = React.useState(athlete.email || "");
   
-  const handleAddAthlete = async () => {
+  React.useEffect(() => {
+    // Actualizar los estados cuando cambia el atleta
+    setName(athlete.name);
+    setEmail(athlete.email || "");
+  }, [athlete]);
+  
+  const handleUpdateAthlete = async () => {
     if (!name.trim()) return;
     
-    const newAthlete: Athlete = {
-      id: `temp-${Date.now()}`, // ID temporal que será reemplazado por el del backend
+    const updatedAthlete: Athlete = {
+      ...athlete,
       name: name.trim(),
       email: email.trim(),
-      avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
-      currentWorkout: null,
-      status: "not_started",
-      progressPercentage: 0,
     };
     
-    await addAthlete(newAthlete);
-    setName("");
-    setEmail("");
+    await updateAthlete(updatedAthlete);
     setOpen(false);
   };
   
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <UserPlus className="w-4 h-4 mr-2" />
-          Añadir atleta
+        <Button
+          size="icon"
+          variant="ghost"
+          className="text-primary hover:bg-primary/10 hover:text-primary rounded-full"
+        >
+          <Pencil className="w-4 h-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Añadir nuevo atleta</DialogTitle>
+          <DialogTitle>Editar atleta</DialogTitle>
           <DialogDescription>
-            Ingresa los datos del atleta para añadirlo al sistema.
+            Modifica los datos del atleta.
           </DialogDescription>
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
+            <Label htmlFor="edit-name" className="text-right">
               Nombre
             </Label>
             <Input
-              id="name"
+              id="edit-name"
               className="col-span-3"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -72,11 +78,11 @@ const AddAthleteDialog = () => {
           </div>
           
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
+            <Label htmlFor="edit-email" className="text-right">
               Email
             </Label>
             <Input
-              id="email"
+              id="edit-email"
               type="email"
               className="col-span-3"
               value={email}
@@ -90,8 +96,8 @@ const AddAthleteDialog = () => {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancelar
           </Button>
-          <Button disabled={!name.trim()} onClick={handleAddAthlete}>
-            Añadir atleta
+          <Button disabled={!name.trim()} onClick={handleUpdateAthlete}>
+            Guardar cambios
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -99,4 +105,4 @@ const AddAthleteDialog = () => {
   );
 };
 
-export default AddAthleteDialog;
+export default EditAthleteDialog;
