@@ -68,14 +68,18 @@ const createWorkout = async (req, res) => {
         name,
         description,
         exercises: {
-          create: exercises.map(ex => ({
+          create: exercises.map((ex, i) => ({
             exercise: {
-              connect: { id: ex.exerciseId }
+              create: { 
+                name: ex.name,
+                description: '',
+              }
             },
             sets: ex.sets,
             reps: ex.reps,
             weight: ex.weight,
-            restTime: ex.restTime
+            rest: ex.restTime,
+            order: i
           }))
         }
       },
@@ -103,7 +107,23 @@ const updateWorkout = async (req, res) => {
   const { name, description, exercises } = req.body;
   
   try {
-    // Primero eliminamos las relaciones existentes
+    // Primero actualizamos los ejercicios existentes que necesitan cambios
+    if (exercises) {
+      for (const ex of exercises) {
+        if (ex.exerciseId) {
+          // Actualizamos los ejercicios existentes
+          await prisma.exercise.update({
+            where: { id: parseInt(ex.exerciseId) },
+            data: {
+              name: ex.name,
+              description: ex.description || ''
+            }
+          });
+        }
+      }
+    }
+    
+    // Eliminamos las relaciones existentes
     await prisma.workoutExercise.deleteMany({
       where: { workoutId: parseInt(id) }
     });
@@ -115,15 +135,29 @@ const updateWorkout = async (req, res) => {
         name,
         description,
         exercises: exercises ? {
-          create: exercises.map(ex => ({
-            exercise: {
-              connect: { id: ex.exerciseId }
-            },
-            sets: ex.sets,
-            reps: ex.reps,
-            weight: ex.weight,
-            restTime: ex.restTime
-          }))
+          create: exercises.map((ex, i) => {
+            // Si tiene exerciseId, conectamos con el ejercicio existente
+            // Si no, creamos un nuevo ejercicio
+            const exerciseData = ex.exerciseId 
+              ? { 
+                  connect: { id: parseInt(ex.exerciseId) } 
+                }
+              : { 
+                  create: { 
+                    name: ex.name,
+                    description: ex.description || '',
+                  }
+                };
+                
+            return {
+              exercise: exerciseData,
+              sets: ex.sets,
+              reps: ex.reps,
+              weight: ex.weight,
+              rest: ex.restTime,
+              order: i
+            };
+          })
         } : undefined
       },
       include: {
