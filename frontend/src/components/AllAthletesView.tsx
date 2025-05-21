@@ -1,12 +1,13 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useGym } from "@/context/GymContext";
 import { useAuth } from "@/context/AuthContext";
 import AthleteCard from "./AthleteCard";
 import AddAthleteDialog from "./AddAthleteDialog";
+import { Loader2 } from "lucide-react";
 
 const AllAthletesView = () => {
-  const { athletes } = useGym();
+  const { athletes, loading, fetchAthletes } = useGym();
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
@@ -27,22 +28,29 @@ const AllAthletesView = () => {
         <AddAthleteDialog />
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {athletes.length === 0 ? (
-          <div className="col-span-full p-6 bg-muted/40 rounded-lg text-center">
-            <h3 className="text-lg font-medium text-muted-foreground">
-              No hay atletas registrados
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Añade atletas para comenzar a gestionar entrenamientos.
-            </p>
-          </div>
-        ) : (
-          athletes.map((athlete) => (
-            <AthleteCard key={athlete.id} athlete={athlete} />
-          ))
-        )}
-      </div>
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-lg">Cargando atletas...</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {athletes.length === 0 ? (
+            <div className="col-span-full p-6 bg-muted/40 rounded-lg text-center">
+              <h3 className="text-lg font-medium text-muted-foreground">
+                No hay atletas registrados
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Añade atletas para comenzar a gestionar entrenamientos.
+              </p>
+            </div>
+          ) : (
+            athletes.map((athlete) => (
+              <AthleteCard key={athlete.id} athlete={athlete} />
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 };

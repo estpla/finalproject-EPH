@@ -1,8 +1,11 @@
 
-import React, { createContext, useState, useContext, ReactNode } from "react";
-import { Athlete, Exercise, WorkoutPlan } from "../types";
-import { mockAthletes, mockWorkoutPlans } from "../data/mock-data";
+import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import { Athlete, WorkoutPlan } from "../types";
+import { mockWorkoutPlans } from "../data/mock-data";
 import { toast } from "@/components/ui/use-toast";
+
+// URL del backend
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 interface GymContextType {
   athletes: Athlete[];
@@ -10,6 +13,7 @@ interface GymContextType {
   workoutPlans: WorkoutPlan[];
   addAthlete: (athlete: Athlete) => void;
   removeAthlete: (athleteId: string) => void;
+  updateAthlete: (athlete: Athlete) => Promise<void>;
   updateAthleteStatus: (athleteId: string, status: Athlete["status"]) => void;
   updateAthleteProgress: (athleteId: string, progressPercentage: number) => void;
   updateExerciseCompletion: (athleteId: string, exerciseId: string, completedSets: number) => void;
@@ -17,34 +21,219 @@ interface GymContextType {
   addWorkoutPlan: (workoutPlan: WorkoutPlan) => void;
   updateWorkoutPlan: (workoutPlan: WorkoutPlan) => void;
   removeWorkoutPlan: (workoutPlanId: string) => void;
+  loading: boolean;
+  fetchAthletes: () => Promise<void>;
 }
 
 const GymContext = createContext<GymContextType | undefined>(undefined);
 
 export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [athletes, setAthletes] = useState<Athlete[]>(mockAthletes);
+  const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>(mockWorkoutPlans);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const activeAthletes = athletes.filter(
     (athlete) => athlete.status !== "finished" && athlete.status !== "not_started"
   );
 
-  // Atletas
-  const addAthlete = (athlete: Athlete) => {
-    setAthletes((prev) => [...prev, athlete]);
-    toast({
-      title: "Atleta añadido",
-      description: `${athlete.name} ha sido añadido al sistema.`,
-    });
+  // Función para obtener atletas desde la API
+  const fetchAthletes = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/athletes`);
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener los atletas');
+      }
+      
+      const data = await response.json();
+      
+      // Transformar los datos del backend al formato que espera el frontend
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const formattedAthletes: Athlete[] = data.map((athlete: any) => ({
+        id: athlete.id.toString(),
+        name: athlete.name,
+        email: athlete.email || '',
+        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+        currentWorkout: athlete.assignedWorkout ? {
+          id: athlete.assignedWorkout.id.toString(),
+          name: athlete.assignedWorkout.name,
+          description: athlete.assignedWorkout.description || '',
+          exercises: [],
+          totalExercises: 0,
+          completedExercises: 0
+        } : null,
+        status: athlete.activeSessionId ? "active" : "not_started",
+        progressPercentage: 0,
+      }));
+      
+      setAthletes(formattedAthletes);
+    } catch (error) {
+      console.error('Error al cargar atletas:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los atletas",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeAthlete = (athleteId: string) => {
-    const athlete = athletes.find((a) => a.id === athleteId);
-    if (athlete) {
-      setAthletes((prev) => prev.filter((a) => a.id !== athleteId));
+  // Cargar atletas al montar el componente
+  useEffect(() => {
+    fetchAthletes();
+  }, []);
+
+  // Atletas
+  const addAthlete = async (athlete: Athlete) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error('No se ha encontrado un token de autenticación.');
+      }
+
+      const response = await fetch(`${API_URL}/api/athletes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: athlete.name,
+          email: athlete.email,
+          assignedWorkoutId: athlete.currentWorkout?.id
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al crear el atleta');
+      }
+
+      const newAthlete = await response.json();
+      
+      // Transformar el atleta recibido al formato del frontend
+      const formattedAthlete: Athlete = {
+        id: newAthlete.id.toString(),
+        name: newAthlete.name,
+        email: newAthlete.email || '',
+        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+        currentWorkout: newAthlete.assignedWorkout ? {
+          id: newAthlete.assignedWorkout.id.toString(),
+          name: newAthlete.assignedWorkout.name,
+          // description: newAthlete.assignedWorkout.description || '',
+          exercises: [],
+          totalExercises: 0,
+          completedExercises: 0
+        } : null,
+        status: "not_started",
+        progressPercentage: 0,
+      };
+
+      setAthletes((prev) => [...prev, formattedAthlete]);
+      
       toast({
-        title: "Atleta eliminado",
-        description: `${athlete.name} ha sido eliminado del sistema.`,
+        title: "Atleta añadido",
+        description: `${formattedAthlete.name} ha sido añadido al sistema.`,
+      });
+    } catch (error) {
+      console.error('Error al añadir atleta:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al añadir el atleta",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const removeAthlete = async (athleteId: string) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error('No se ha encontrado un token de autenticación.');
+      }
+
+      const response = await fetch(`${API_URL}/api/athletes/${athleteId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al eliminar el atleta');
+      }
+
+      const athlete = athletes.find((a) => a.id === athleteId);
+      if (athlete) {
+        setAthletes((prev) => prev.filter((a) => a.id !== athleteId));
+        toast({
+          title: "Atleta eliminado",
+          description: `${athlete.name} ha sido eliminado del sistema.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error al eliminar atleta:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al eliminar el atleta",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const updateAthlete = async (athlete: Athlete) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error('No se ha encontrado un token de autenticación.');
+      }
+
+      const response = await fetch(`${API_URL}/api/athletes/${athlete.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: athlete.name,
+          email: athlete.email,
+          assignedWorkoutId: athlete.currentWorkout?.id
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar el atleta');
+      }
+
+      const updatedAthlete = await response.json();
+      
+      // Actualizar el atleta en el estado
+      setAthletes((prev) =>
+        prev.map((a) =>
+          a.id === athlete.id
+            ? {
+                ...a,
+                name: updatedAthlete.name,
+                email: updatedAthlete.email || '',
+              }
+            : a
+        )
+      );
+      
+      toast({
+        title: "Atleta actualizado",
+        description: `${updatedAthlete.name} ha sido actualizado correctamente.`,
+      });
+    } catch (error) {
+      console.error('Error al actualizar atleta:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al actualizar el atleta",
+        variant: "destructive"
       });
     }
   };
@@ -148,29 +337,61 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     );
   };
 
-  const assignWorkoutToAthlete = (athleteId: string, workoutPlanId: string) => {
-    const workoutPlan = workoutPlans.find((w) => w.id === workoutPlanId);
-    const athlete = athletes.find((a) => a.id === athleteId);
+  const assignWorkoutToAthlete = async (athleteId: string, workoutPlanId: string) => {
+    try {
+      const response = await fetch(`/api/athletes/${athleteId}/assign-workout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ workoutId: workoutPlanId }),
+      });
 
-    if (!workoutPlan || !athlete) return;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al asignar la rutina');
+      }
 
-    setAthletes((prev) =>
-      prev.map((a) =>
-        a.id === athleteId
-          ? {
-              ...a,
-              currentWorkout: { ...workoutPlan },
-              progressPercentage: 0,
-              status: "not_started",
-            }
-          : a
-      )
-    );
+      const updatedAthlete = await response.json();
+      
+      // Actualizar el atleta en el estado
+      setAthletes((prev) =>
+        prev.map((a) =>
+          a.id === athleteId
+            ? {
+                ...a,
+                currentWorkout: updatedAthlete.assignedWorkout ? {
+                  id: updatedAthlete.assignedWorkout.id.toString(),
+                  name: updatedAthlete.assignedWorkout.name,
+                  description: updatedAthlete.assignedWorkout.description || '',
+                  exercises: [],
+                  totalExercises: 0,
+                  completedExercises: 0
+                } : null,
+                progressPercentage: 0,
+                status: "not_started",
+              }
+            : a
+        )
+      );
 
-    toast({
-      title: "Rutina asignada",
-      description: `${workoutPlan.name} ha sido asignada a ${athlete.name}.`,
-    });
+      const workoutPlan = workoutPlans.find((w) => w.id === workoutPlanId);
+      const athlete = athletes.find((a) => a.id === athleteId);
+
+      if (workoutPlan && athlete) {
+        toast({
+          title: "Rutina asignada",
+          description: `${workoutPlan.name} ha sido asignada a ${athlete.name}.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error al asignar rutina:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al asignar la rutina",
+        variant: "destructive"
+      });
+    }
   };
 
   // Planes de entrenamiento
@@ -264,6 +485,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     workoutPlans,
     addAthlete,
     removeAthlete,
+    updateAthlete,
     updateAthleteStatus,
     updateAthleteProgress,
     updateExerciseCompletion,
@@ -271,11 +493,14 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     addWorkoutPlan,
     updateWorkoutPlan,
     removeWorkoutPlan,
+    loading,
+    fetchAthletes
   };
 
   return <GymContext.Provider value={value}>{children}</GymContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useGym = (): GymContextType => {
   const context = useContext(GymContext);
   if (context === undefined) {
