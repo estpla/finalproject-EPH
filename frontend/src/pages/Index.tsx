@@ -58,7 +58,7 @@ const HomeContent = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         {activeAthletes.length === 0 ? (
           <div className="col-span-full p-6 bg-muted/40 rounded-lg text-center">
             <h3 className="text-lg font-medium text-muted-foreground">
@@ -70,15 +70,13 @@ const HomeContent = () => {
           </div>
         ) : (
           currentAthletes.map((athlete) => (
-            <div key={athlete.id} className="h-full flex">
-              <SimplifiedAthleteCard athlete={athlete} />
-            </div>
+            <SimplifiedAthleteCard key={athlete.id} athlete={athlete} />
           ))
         )}
       </div>
 
       {totalPages > 1 && (
-        <Pagination className="mt-6">
+        <Pagination className="mt-4">
           <PaginationContent>
             {Array.from({ length: totalPages }, (_, i) => (
               <PaginationItem key={i}>
@@ -101,11 +99,11 @@ const HomeContent = () => {
 const Index = () => {
   return (
     <GymProvider>
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col">
         <Header />
         
         <main className="container mx-auto px-4 flex-1 mb-6">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Atletas activos</h2>
           </div>
           

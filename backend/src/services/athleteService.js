@@ -7,7 +7,11 @@ const athleteService = {
   async getAllAthletes() {
     return prisma.athlete.findMany({
       include: {
-        assignedWorkout: true
+        assignedWorkout: {
+          include: {
+            exercises: true
+          }
+        }
       }
     });
   },
