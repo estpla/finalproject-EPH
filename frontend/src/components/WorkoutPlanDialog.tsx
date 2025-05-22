@@ -72,7 +72,7 @@ const WorkoutPlanDialog: React.FC<WorkoutPlanDialogProps> = ({
       updatedExercises[index] = {
         ...updatedExercises[index],
         name: value,
-        id: updatedExercises[index].id || uuidv4() // Asignar un ID único si no tiene
+        id: updatedExercises[index].id || null
       };
     } else {
       updatedExercises[index] = {
@@ -96,22 +96,11 @@ const WorkoutPlanDialog: React.FC<WorkoutPlanDialogProps> = ({
       return;
     }
     
-    // Validar que todos los ejercicios tengan un ID válido
-    const invalidExercises = exercises.filter(ex => !ex.id);
-    if (invalidExercises.length > 0) {
-      toast({
-        title: "Error",
-        description: "Todos los ejercicios deben tener un nombre seleccionado",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     try {
       setIsSubmitting(true);
       
       const plan: WorkoutPlan = {
-        id: workoutPlan?.id || uuidv4(),
+        id: workoutPlan?.id || "",
         name,
         description,
         exercises,
