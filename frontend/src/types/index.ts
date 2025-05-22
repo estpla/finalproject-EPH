@@ -28,6 +28,7 @@ export type Athlete = {
   avatar?: string;
   currentWorkout: WorkoutPlan | null;
   status: 'active' | 'resting' | 'finished' | 'not_started';
+  activeSessionId?: number;
   startTime?: Date;
   progressPercentage: number;
 };

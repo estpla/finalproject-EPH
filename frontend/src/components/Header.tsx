@@ -74,17 +74,6 @@ const Header = () => {
             )}
           </div>
         </div>
-        
-        {path === "/" && (
-          <Tabs defaultValue="/" value="/" onValueChange={handleTabChange}>
-            <TabsList className="grid w-full grid-cols-1 sm:w-auto">
-              <TabsTrigger value="/" className="flex items-center gap-2">
-                <Activity size={16} />
-                <span className="hidden sm:inline">Atletas activos</span>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        )}
       </div>
     </div>
   );

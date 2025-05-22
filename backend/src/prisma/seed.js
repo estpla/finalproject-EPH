@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+const { faker } = require('@faker-js/faker');
 
 const prisma = new PrismaClient();
 
@@ -87,25 +88,29 @@ async function main() {
   console.log('Ejercicios asignados al plan');
   
   // Crear atletas
-  const athletes = [
-    { name: 'Juan Pérez', email: 'juan@example.com' },
-    { name: 'María García', email: 'maria@example.com' },
-    { name: 'Carlos López', email: 'carlos@example.com' }
-  ];
+  console.log('Creando atletas...');
   
-  for (const athlete of athletes) {
+  // Generar 100 atletas con datos aleatorios
+  const athletes = 100;
+  
+  for (let i = 0; i < athletes; i++) {
+    const firstName = faker.person.firstName();
+    const lastName = faker.person.lastName();
+    const name = `${firstName} ${lastName}`;
+    const email = faker.internet.email({ firstName, lastName }).toLowerCase();
+    
     await prisma.athlete.upsert({
-      where: { email: athlete.email },
+      where: { email },
       update: {},
       create: {
-        name: athlete.name,
-        email: athlete.email,
+        name,
+        email,
         assignedWorkoutId: workout.id
       }
     });
   }
   
-  console.log('Atletas creados');
+  console.log(`Total de atletas creados: ${athletes}`);
   
   console.log('Seed completado con éxito');
 }

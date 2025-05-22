@@ -12,6 +12,8 @@ interface GymContextType {
   athletes: Athlete[];
   activeAthletes: Athlete[];
   workoutPlans: WorkoutPlan[];
+  activeSessions: any[];
+  roomStatus: any;
   addAthlete: (athlete: Athlete) => void;
   removeAthlete: (athleteId: string) => void;
   updateAthlete: (athlete: Athlete) => Promise<void>;
@@ -22,16 +24,21 @@ interface GymContextType {
   addWorkoutPlan: (workoutPlan: WorkoutPlan) => Promise<void>;
   updateWorkoutPlan: (workoutPlan: WorkoutPlan) => Promise<void>;
   removeWorkoutPlan: (workoutPlanId: string) => Promise<void>;
+  endSession: (sessionId: string) => Promise<void>;
+  updateRoomOrder: (sessionIds: number[]) => Promise<boolean>;
   loading: boolean;
   fetchAthletes: () => Promise<void>;
   fetchWorkoutPlans: () => Promise<void>;
+  fetchRoomStatus: () => Promise<void>;
 }
 
 const GymContext = createContext<GymContextType | undefined>(undefined);
 
 export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [athletes, setAthletes] = useState<Athlete[]>([]);
-  const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>(mockWorkoutPlans);
+  const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
+  const [activeSessions, setActiveSessions] = useState<any[]>([]);
+  const [roomStatus, setRoomStatus] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const activeAthletes = athletes.filter(
@@ -49,24 +56,31 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
       
       const data = await response.json();
-      
+
       // Transformar los datos del backend al formato que espera el frontend
-      const formattedAthletes: Athlete[] = data.map((athlete: any) => ({
-        id: athlete.id.toString(),
-        name: athlete.name,
-        email: athlete.email || '',
-        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
-        currentWorkout: athlete.assignedWorkout ? {
-          id: athlete.assignedWorkout.id.toString(),
-          name: athlete.assignedWorkout.name,
-          description: athlete.assignedWorkout.description || '',
-          exercises: [],
-          totalExercises: 0,
-          completedExercises: 0
-        } : null,
-        status: athlete.activeSessionId ? "active" : "not_started",
-        progressPercentage: 0,
-      }));
+      const formattedAthletes: Athlete[] = data.map((athlete: any) => {
+        // Buscar el plan de entrenamiento completo si el atleta tiene uno asignado
+        const workoutPlan = athlete.assignedWorkout 
+          ? workoutPlans.find(wp => wp.id === athlete.assignedWorkout.id.toString())
+          : null;
+        
+        return {
+          id: athlete.id.toString(),
+          name: athlete.name,
+          email: athlete.email || '',
+          avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+          currentWorkout: athlete.assignedWorkout ? {
+            id: athlete.assignedWorkout.id.toString(),
+            name: athlete.assignedWorkout.name,
+            description: athlete.assignedWorkout.description || '',
+            exercises: workoutPlan ? workoutPlan.exercises : [],
+            totalExercises: workoutPlan ? workoutPlan.exercises.length : 0,
+            completedExercises: 0
+          } : null,
+          status: athlete.activeSessionId ? "active" : "not_started",
+          progressPercentage: 0,
+        };
+      });
       
       setAthletes(formattedAthletes);
     } catch (error) {
@@ -115,7 +129,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           completedExercises: 0
         };
       });
-      
+
       setWorkoutPlans(formattedWorkoutPlans);
     } catch (error) {
       console.error('Error al cargar planes de entrenamiento:', error);
@@ -129,11 +143,43 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const fetchRoomStatus = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/sessions/room/status`);
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener el estado de la sala');
+      }
+      
+      const data = await response.json();
+      setRoomStatus(data);
+      setActiveSessions(data.sessions || []);
+    } catch (error) {
+      console.error('Error al cargar el estado de la sala:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo cargar el estado de la sala",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Cargar datos al montar el componente
   useEffect(() => {
-    fetchAthletes();
     fetchWorkoutPlans();
   }, []);
+  
+  // Cargar atletas cuando cambien los planes de entrenamiento
+  useEffect(() => {
+    // Solo ejecutar si workoutPlans tiene datos
+    if (workoutPlans.length > 0) {
+      fetchAthletes();
+      fetchRoomStatus();
+    }
+  }, [workoutPlans]);
 
   // Atletas
   const addAthlete = async (athlete: Athlete) => {
@@ -682,10 +728,99 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  // Finalizar una sesión de entrenamiento
+  const endSession = async (sessionId: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/sessions/end/${sessionId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al finalizar la sesión');
+      }
+
+      const endedSession = await response.json();
+      
+      // Actualizar el estado local
+      setActiveSessions(prev => prev.filter(session => session.id !== parseInt(sessionId)));
+      
+      // Actualizar el estado del atleta
+      setAthletes(prev => 
+        prev.map(athlete => 
+          athlete.id === endedSession.athlete.id.toString() 
+            ? { ...athlete, status: "not_started", activeSessionId: null } 
+            : athlete
+        )
+      );
+      
+      // Refrescar el estado de la sala
+      await fetchRoomStatus();
+      
+      toast({
+        title: "Sesión finalizada",
+        description: `La sesión ha sido finalizada correctamente.`,
+      });
+    } catch (error) {
+      console.error('Error al finalizar sesión:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al finalizar la sesión",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Añadir función para actualizar el orden de la sala
+  const updateRoomOrder = async (sessionIds: number[]) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${API_URL}/api/sessions/reorder`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ sessionsOrder: sessionIds })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar el orden de la sala');
+      }
+      
+      // Actualizar el estado local
+      await fetchRoomStatus();
+      
+      return true;
+    } catch (error) {
+      console.error('Error al actualizar el orden de la sala:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al actualizar el orden de la sala",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   const value = {
     athletes,
     activeAthletes,
     workoutPlans,
+    activeSessions,
+    roomStatus,
     addAthlete,
     removeAthlete,
     updateAthlete,
@@ -696,9 +831,12 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     addWorkoutPlan,
     updateWorkoutPlan,
     removeWorkoutPlan,
+    endSession,
+    updateRoomOrder,
     loading,
     fetchAthletes,
-    fetchWorkoutPlans
+    fetchWorkoutPlans,
+    fetchRoomStatus,
   };
 
   return <GymContext.Provider value={value}>{children}</GymContext.Provider>;

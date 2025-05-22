@@ -74,6 +74,30 @@ const sessionController = {
     } catch (error) {
       next(error);
     }
+  },
+  
+  // Reordenar sesiones activas
+  async reorderSessions(req, res, next) {
+    try {
+      const { sessionsOrder } = req.body;
+      
+      if (!sessionsOrder || !Array.isArray(sessionsOrder) || sessionsOrder.length === 0) {
+        return res.status(400).json({ error: 'Se requiere un array con el orden de las sesiones' });
+      }
+      
+      // Convertir los IDs a números enteros
+      const sessionIds = sessionsOrder.map(id => parseInt(id));
+      
+      // Reordenar las sesiones
+      const updatedSessions = await sessionService.reorderSessions(sessionIds);
+      
+      // Notificar a todos los clientes conectados sobre el reordenamiento
+      socketModule.io.emit('sessions:reordered', updatedSessions);
+      
+      res.json(updatedSessions);
+    } catch (error) {
+      next(error);
+    }
   }
 };
 
