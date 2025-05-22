@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Dumbbell, Activity, TrendingUp } from "lucide-react";
 import { useGym } from "@/context/GymContext";
@@ -7,7 +7,8 @@ import { GymProvider } from "@/context/GymContext";
 
 const DashboardContent = () => {
   const { athletes, workoutPlans } = useGym();
-  
+  const { dashboardStats, fetchDashboardStats } = useGym();
+
   // Calcular KPIs básicos
   const totalAthletes = athletes.length;
   const activeAthletes = athletes.filter(a => a.status === "active").length;
@@ -15,6 +16,10 @@ const DashboardContent = () => {
   const completionRate = athletes.length > 0 
     ? Math.round((athletes.filter(a => a.status === "finished").length / totalAthletes) * 100) 
     : 0;
+
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -86,20 +91,16 @@ const DashboardContent = () => {
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Activos:</span>
-                <span className="font-medium">{athletes.filter(a => a.status === "active").length}</span>
+                <span className="text-muted-foreground">Activos este mes:</span>
+                <span className="font-medium">{dashboardStats?.athleteStatusDistribution?.active || 0}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">En descanso:</span>
-                <span className="font-medium">{athletes.filter(a => a.status === "resting").length}</span>
+                <span className="text-muted-foreground">Finalizados este mes:</span>
+                <span className="font-medium">{dashboardStats?.athleteStatusDistribution?.finished || 0}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Finalizados:</span>
-                <span className="font-medium">{athletes.filter(a => a.status === "finished").length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Sin comenzar:</span>
-                <span className="font-medium">{athletes.filter(a => a.status === "not_started").length}</span>
+                <span className="text-muted-foreground">Sin comenzar este mes:</span>
+                <span className="font-medium">{dashboardStats?.athleteStatusDistribution?.notStarted || 0}</span>
               </div>
             </div>
           </CardContent>
@@ -111,13 +112,13 @@ const DashboardContent = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {workoutPlans.slice(0, 4).map((plan) => (
+              {dashboardStats?.workoutPerformance?.map((plan) => (
                 <div key={plan.id} className="flex justify-between">
                   <span className="text-muted-foreground truncate max-w-[70%]">{plan.name}:</span>
-                  <span className="font-medium">{athletes.filter(a => a.currentWorkout?.id === plan.id).length} atletas</span>
+                  <span className="font-medium">{plan.athleteCount} atletas</span>
                 </div>
               ))}
-              {workoutPlans.length === 0 && (
+              {(!dashboardStats?.workoutPerformance || dashboardStats.workoutPerformance.length === 0) && (
                 <p className="text-muted-foreground text-center py-4">No hay rutinas disponibles</p>
               )}
             </div>

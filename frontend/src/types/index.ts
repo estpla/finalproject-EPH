@@ -41,3 +41,21 @@ export type User = {
   role: UserRole;
   email?: string;
 };
+
+export interface DashboardStats {
+  totalAthletes: number;
+  activeAthletes: number;
+  totalWorkouts: number;
+  completionRate: number;
+  athleteStatusDistribution: {
+    active: number;
+    resting: number;
+    finished: number;
+    notStarted: number;
+  };
+  workoutPerformance: Array<{
+    id: number;
+    name: string;
+    athleteCount: number;
+  }>;
+}

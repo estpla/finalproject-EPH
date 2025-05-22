@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
-import { Athlete, WorkoutPlan } from "../types";
+import { Athlete, DashboardStats, WorkoutPlan } from "../types";
 import { mockWorkoutPlans } from "../data/mock-data";
 import { toast } from "@/components/ui/use-toast";
 
@@ -30,6 +30,8 @@ interface GymContextType {
   fetchAthletes: () => Promise<void>;
   fetchWorkoutPlans: () => Promise<void>;
   fetchRoomStatus: () => Promise<void>;
+  dashboardStats: DashboardStats | null;
+  fetchDashboardStats: () => Promise<void>;
 }
 
 const GymContext = createContext<GymContextType | undefined>(undefined);
@@ -39,6 +41,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [activeSessions, setActiveSessions] = useState<any[]>([]);
   const [roomStatus, setRoomStatus] = useState<any>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const activeAthletes = athletes.filter(
@@ -815,6 +818,35 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("authToken");
+      
+      const response = await fetch(`${API_URL}/api/dashboard/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener estadísticas del dashboard');
+      }
+      
+      const data = await response.json();
+      setDashboardStats(data);
+    } catch (error) {
+      console.error('Error al cargar estadísticas del dashboard:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las estadísticas del dashboard",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     athletes,
     activeAthletes,
@@ -837,6 +869,8 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     fetchAthletes,
     fetchWorkoutPlans,
     fetchRoomStatus,
+    dashboardStats,
+    fetchDashboardStats,
   };
 
   return <GymContext.Provider value={value}>{children}</GymContext.Provider>;
