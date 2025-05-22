@@ -4,12 +4,14 @@ const authRoutes = require('./authRoutes');
 const athleteRoutes = require('./athleteRoutes');
 const sessionRoutes = require('./sessionRoutes');
 const workoutRoutes = require('./workoutRoutes');
+const dashboardRoutes = require('./dashboardRoutes');
 
 // Rutas principales
 router.use('/auth', authRoutes);
 router.use('/athletes', athleteRoutes);
 router.use('/sessions', sessionRoutes);
 router.use('/workouts', workoutRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 // Ruta de prueba para verificar que la API está funcionando
 router.get('/health', (req, res) => {
