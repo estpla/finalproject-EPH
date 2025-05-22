@@ -15,4 +15,7 @@ router.get('/active', authMiddleware.verifyToken, sessionController.getActiveSes
 // Obtener estado de la sala (endpoint público para monitor)
 router.get('/room/status', sessionController.getRoomStatus);
 
+// Reordenar sesiones activas
+router.post('/reorder', authMiddleware.verifyToken, sessionController.reorderSessions);
+
 module.exports = router;

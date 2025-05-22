@@ -11,6 +11,9 @@ const getAllWorkouts = async (req, res) => {
         exercises: {
           include: {
             exercise: true
+          },
+          orderBy: {
+            order: 'asc'
           }
         }
       }

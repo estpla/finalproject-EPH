@@ -23,7 +23,8 @@ import {
   Users, 
   Dumbbell,
   LogOut,
-  LayoutGrid
+  LayoutGrid,
+  Home
 } from "lucide-react";
 import Footer from "@/components/Footer";
 
@@ -96,6 +97,12 @@ const BackofficeLayout: React.FC = () => {
                   </div>
                 </div>
               </div>
+              <SidebarMenuButton asChild className="w-full justify-start mb-2">
+                <Link to="/">
+                  <Home size={18} />
+                  <span>Volver al inicio</span>
+                </Link>
+              </SidebarMenuButton>
               <SidebarMenuButton onClick={() => logout()} className="w-full justify-start text-destructive hover:text-destructive">
                 <LogOut size={18} />
                 <span>Cerrar sesión</span>

@@ -38,12 +38,19 @@ const sessionService = {
       throw new Error('El atleta no tiene un plan de entrenamiento asignado');
     }
     
-    // Crear la sesión
+    // Obtener la posición más alta actual para colocar la nueva sesión al final
+    const activeSessions = await this.getActiveSessions();
+    const maxPosition = activeSessions.length > 0 
+      ? Math.max(...activeSessions.map(session => session.position))
+      : -1;
+    
+    // Crear la sesión con la posición al final
     const session = await prisma.trainingSession.create({
       data: {
         startedAt: new Date(),
         athleteId: athlete.id,
-        workoutId: athlete.assignedWorkout.id
+        workoutId: athlete.assignedWorkout.id,
+        position: maxPosition + 1 // Asignar posición al final
       },
       include: {
         athlete: true,
@@ -105,7 +112,8 @@ const sessionService = {
             exercises: true
           }
         }
-      }
+      },
+      orderBy: { position: 'asc' }
     });
   },
   
@@ -131,6 +139,40 @@ const sessionService = {
       activeCount: sessionsWithProgress.length,
       sessions: sessionsWithProgress
     };
+  },
+  
+  // Reordenar sesiones activas
+  async reorderSessions(sessionsOrder) {
+    // Validar que todos los IDs correspondan a sesiones activas
+    const activeSessions = await this.getActiveSessions();
+    const activeSessionIds = activeSessions.map(session => session.id);
+    
+    // Verificar que todos los IDs en sessionsOrder existan en activeSessionIds
+    const allIdsExist = sessionsOrder.every(id => activeSessionIds.includes(id));
+    
+    if (!allIdsExist) {
+      throw new Error('Algunos IDs de sesión no corresponden a sesiones activas');
+    }
+    
+    // Actualizar la posición de cada sesión
+    const updatedSessions = await Promise.all(
+      sessionsOrder.map(async (sessionId, index) => {
+        return prisma.trainingSession.update({
+          where: { id: sessionId },
+          data: { position: index },
+          include: {
+            athlete: true,
+            workout: {
+              include: {
+                exercises: true
+              }
+            }
+          }
+        });
+      })
+    );
+    
+    return updatedSessions;
   }
 };
 

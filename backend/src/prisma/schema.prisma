@@ -89,6 +89,7 @@ model TrainingSession {
   workoutId Int
   startedAt DateTime  @default(now())
   endedAt   DateTime?
+  position  Int       @default(0)
   
   // Relaciones
   athlete   Athlete   @relation(fields: [athleteId], references: [id])
