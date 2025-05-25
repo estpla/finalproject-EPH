@@ -75,6 +75,15 @@ describe("SessionController", () => {
       expect(mockRes.status).toHaveBeenCalledWith(201);
       expect(mockRes.json).toHaveBeenCalledWith(newSession);
     });
+
+    it("should call next on unexpected error", async () => {
+      mockReq.body = { athleteId: 1 };
+      sessionService.getActiveSessionByAthleteId.mockRejectedValue(
+        new Error("fail")
+      );
+      await sessionController.startSession(mockReq, mockRes, mockNext);
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 
   describe("endSession", () => {
@@ -104,6 +113,13 @@ describe("SessionController", () => {
       );
       expect(mockRes.json).toHaveBeenCalledWith(endedSession);
     });
+
+    it("should call next on unexpected error", async () => {
+      mockReq.params = { sessionId: "1" };
+      sessionService.endSession.mockRejectedValue(new Error("fail"));
+      await sessionController.endSession(mockReq, mockRes, mockNext);
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 
   describe("getActiveSessions", () => {
@@ -118,6 +134,12 @@ describe("SessionController", () => {
 
       expect(mockRes.json).toHaveBeenCalledWith(activeSessions);
     });
+
+    it("should call next on unexpected error", async () => {
+      sessionService.getActiveSessions.mockRejectedValue(new Error("fail"));
+      await sessionController.getActiveSessions(mockReq, mockRes, mockNext);
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 
   describe("getRoomStatus", () => {
@@ -131,6 +153,12 @@ describe("SessionController", () => {
       await sessionController.getRoomStatus(mockReq, mockRes, mockNext);
 
       expect(mockRes.json).toHaveBeenCalledWith(roomStatus);
+    });
+
+    it("should call next on unexpected error", async () => {
+      sessionService.getRoomStatus.mockRejectedValue(new Error("fail"));
+      await sessionController.getRoomStatus(mockReq, mockRes, mockNext);
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 
@@ -162,6 +190,13 @@ describe("SessionController", () => {
         updatedSessions
       );
       expect(mockRes.json).toHaveBeenCalledWith(updatedSessions);
+    });
+
+    it("should call next on unexpected error", async () => {
+      mockReq.body = { sessionsOrder: [1, 2] };
+      sessionService.reorderSessions.mockRejectedValue(new Error("fail"));
+      await sessionController.reorderSessions(mockReq, mockRes, mockNext);
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 });

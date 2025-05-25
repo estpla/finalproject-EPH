@@ -164,6 +164,35 @@ describe("workoutController", () => {
       expect(mockRes.status).toHaveBeenCalledWith(500);
       expect(mockRes.json).toHaveBeenCalledWith({ error: expect.any(String) });
     });
+    it("should update workout without exercises", async () => {
+      mockReq.params = { id: "1" };
+      mockReq.body = { name: "Test", description: "desc" };
+      mockUpdate.mockResolvedValue({
+        id: 1,
+        name: "Test",
+        description: "desc",
+      });
+      mockDeleteMany.mockResolvedValue();
+      await workoutController.updateWorkout(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        id: 1,
+        name: "Test",
+        description: "desc",
+      });
+    });
+    it("should create new exercises if exerciseId is not provided", async () => {
+      mockReq.params = { id: "1" };
+      mockReq.body = {
+        name: "Test",
+        exercises: [{ name: "ex2", sets: 2, reps: 2, weight: 2, restTime: 2 }],
+      };
+      mockUpdate.mockResolvedValue({ id: 1 });
+      mockDeleteMany.mockResolvedValue();
+      await workoutController.updateWorkout(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({ id: 1 });
+    });
   });
 
   describe("deleteWorkout", () => {

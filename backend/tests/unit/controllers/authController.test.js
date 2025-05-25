@@ -100,6 +100,17 @@ describe("AuthController", () => {
         token: "mocktoken",
       });
     });
+
+    it("should call next with error if an unexpected error occurs", async () => {
+      mockReq.body = { email: "test@test.com", password: "password123" };
+      authService.getUserByEmail.mockRejectedValue(
+        new Error("Unexpected error")
+      );
+
+      await authController.login(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 
   describe("register", () => {
@@ -162,6 +173,21 @@ describe("AuthController", () => {
         token: "mocktoken",
       });
     });
+
+    it("should call next with error if an unexpected error occurs", async () => {
+      mockReq.body = {
+        email: "test@test.com",
+        password: "password123",
+        name: "Test User",
+      };
+      authService.getUserByEmail.mockRejectedValue(
+        new Error("Unexpected error")
+      );
+
+      await authController.register(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 
   describe("logout", () => {
@@ -210,6 +236,15 @@ describe("AuthController", () => {
           role: mockUser.role,
         },
       });
+    });
+
+    it("should call next with error if an unexpected error occurs", async () => {
+      mockReq.user = { id: 1 };
+      authService.getUserById.mockRejectedValue(new Error("Unexpected error"));
+
+      await authController.getCurrentUser(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 });

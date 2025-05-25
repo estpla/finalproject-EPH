@@ -71,6 +71,12 @@ describe("Athlete Controller", () => {
       // Verificar resultado
       expect(next).toHaveBeenCalledWith(error);
     });
+
+    it("debe llamar a next en caso de error inesperado", async () => {
+      athleteService.getAllAthletes.mockRejectedValue(new Error("fail"));
+      await athleteController.getAllAthletes(req, res, next);
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 
   describe("getAthleteById", () => {
@@ -103,6 +109,13 @@ describe("Athlete Controller", () => {
       // Verificar resultado
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({ error: "Atleta no encontrado" });
+    });
+
+    it("debe llamar a next en caso de error inesperado", async () => {
+      req.params.id = "1";
+      athleteService.getAthleteById.mockRejectedValue(new Error("fail"));
+      await athleteController.getAthleteById(req, res, next);
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 
@@ -158,6 +171,13 @@ describe("Athlete Controller", () => {
         error: "El email ya está en uso",
       });
     });
+
+    it("debe llamar a next en caso de error inesperado", async () => {
+      req.body = { name: "Nuevo Atleta", email: "nuevo@example.com" };
+      athleteService.getAthleteByEmail.mockRejectedValue(new Error("fail"));
+      await athleteController.createAthlete(req, res, next);
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 
   describe("updateAthlete", () => {
@@ -200,6 +220,13 @@ describe("Athlete Controller", () => {
         error: "El email ya está en uso por otro atleta",
       });
     });
+    it("debe llamar a next en caso de error inesperado", async () => {
+      req.params.id = "1";
+      req.body = { name: "Nuevo Nombre", email: "nuevo@email.com" };
+      athleteService.getAthleteById.mockRejectedValue(new Error("fail"));
+      await athleteController.updateAthlete(req, res, next);
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 
   describe("deleteAthlete", () => {
@@ -229,6 +256,12 @@ describe("Athlete Controller", () => {
         error: "No se puede eliminar un atleta con una sesión activa",
         activeSessionId: 123,
       });
+    });
+    it("debe llamar a next en caso de error inesperado", async () => {
+      req.params.id = "1";
+      athleteService.getAthleteById.mockRejectedValue(new Error("fail"));
+      await athleteController.deleteAthlete(req, res, next);
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 
@@ -273,6 +306,13 @@ describe("Athlete Controller", () => {
       expect(res.json).toHaveBeenCalledWith({
         error: "Plan de entrenamiento no encontrado",
       });
+    });
+    it("debe llamar a next en caso de error inesperado", async () => {
+      req.params.id = "1";
+      req.body = { workoutId: 2 };
+      athleteService.getAthleteById.mockRejectedValue(new Error("fail"));
+      await athleteController.assignWorkout(req, res, next);
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 });
