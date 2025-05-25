@@ -109,7 +109,11 @@ const sessionService = {
         athlete: true,
         workout: {
           include: {
-            exercises: true
+            exercises: {
+              include: {
+                exercise: true
+              }
+            }
           }
         }
       },
