@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import React, { createContext, useState, useContext, ReactNode, useEffect, useRef } from "react";
 import { Athlete, DashboardStats, WorkoutPlan } from "../types";
 import { mockWorkoutPlans } from "../data/mock-data";
 import { toast } from "@/components/ui/use-toast";
+import { io, Socket } from "socket.io-client";
 
 // URL del backend
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -40,9 +41,12 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [activeSessions, setActiveSessions] = useState<any[]>([]);
-  const [roomStatus, setRoomStatus] = useState<any>(null);
+  const [roomStatus, setRoomStatus] = useState<any>({activeCount: 0, sessions: []});
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Referencia para el socket
+  const socketRef = useRef<Socket | null>(null);
 
   const activeAthletes = athletes.filter(
     (athlete) => athlete.status !== "finished" && athlete.status !== "not_started"
@@ -846,6 +850,51 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setLoading(false);
     }
   };
+
+  // Configuración de WebSockets
+  useEffect(() => {
+    // Inicializar la conexión solo si no existe
+    if (!socketRef.current) {
+      socketRef.current = io(API_URL, {
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
+      
+      // Configurar los manejadores de eventos
+      socketRef.current.on('session:started', (session) => {
+        console.log('Nueva sesión iniciada:', session);
+        fetchRoomStatus();
+        fetchAthletes();
+      });
+      
+      socketRef.current.on('session:ended', (session) => {
+        console.log('Sesión finalizada:', session);
+        fetchRoomStatus();
+        fetchAthletes();
+      });
+      
+      socketRef.current.on('sessions:reordered', (sessions) => {
+        console.log('Sesiones reordenadas:', sessions);
+        fetchRoomStatus();
+      });
+      
+      socketRef.current.on('connect', () => {
+        console.log('Conectado al servidor de WebSockets');
+      });
+      
+      socketRef.current.on('disconnect', (reason) => {
+        console.log('Desconectado del servidor de WebSockets:', reason);
+      });
+    }
+    
+    // Limpiar al desmontar
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []); // Sin dependencias para evitar reconexiones
 
   const value = {
     athletes,

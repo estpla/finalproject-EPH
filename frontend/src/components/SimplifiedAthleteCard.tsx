@@ -1,14 +1,15 @@
 
 import React from "react";
-import { Athlete } from "@/types";
+import { Athlete, WorkoutPlan } from "@/types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface SimplifiedAthleteCardProps {
   athlete: Athlete;
+  workout: WorkoutPlan;
 }
 
-const SimplifiedAthleteCard: React.FC<SimplifiedAthleteCardProps> = ({ athlete }) => {
+const SimplifiedAthleteCard: React.FC<SimplifiedAthleteCardProps> = ({  athlete, workout }) => {
   const getStatusColor = (status: Athlete["status"]) => {
     switch (status) {
       case "active":
@@ -30,7 +31,7 @@ const SimplifiedAthleteCard: React.FC<SimplifiedAthleteCardProps> = ({ athlete }
         <div className="relative">
           <div className="w-12 h-12 rounded-full overflow-hidden">
             <img
-              src={athlete.avatar || "https://i.pravatar.cc/150"}
+              src={athlete.avatar || `https://i.pravatar.cc/150?img=${athlete.id}`}
               alt={athlete.name}
               className="w-full h-full object-cover"
             />
@@ -44,17 +45,17 @@ const SimplifiedAthleteCard: React.FC<SimplifiedAthleteCardProps> = ({ athlete }
         <div className="flex-1 min-w-0">
           <h3 className="text-lg font-bold truncate">{athlete.name}</h3>
           <Badge variant={athlete.status === "active" ? "default" : "outline"}>
-            {athlete.currentWorkout?.name || "Sin rutina"}
+            {workout.name || "Sin rutina"}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="p-4">
-        {athlete.currentWorkout && (
+        {workout.exercises && (
           <div className="space-y-3">
-            {athlete.currentWorkout.exercises.slice(0, 4).map((exercise) => (
+            {workout.exercises.slice(0, 4).map((exercise) => (
               <div key={exercise.id} className="flex justify-between items-center text-sm">
                 <div className="font-medium truncate max-w-[60%]">
-                  {exercise.name}
+                  {exercise.exercise.name}
                   <div className="font-normal text-xs text-muted-foreground">
                     {exercise.sets}x{exercise.reps}
                   </div>
@@ -64,14 +65,14 @@ const SimplifiedAthleteCard: React.FC<SimplifiedAthleteCardProps> = ({ athlete }
                 </div>
               </div>
             ))}
-            {athlete.currentWorkout.exercises.length > 4 && (
+            {workout.exercises.length > 4 && (
               <div className="text-xs text-center text-muted-foreground pt-2">
-                +{athlete.currentWorkout.exercises.length - 4} ejercicios más
+                +{workout.exercises.length - 4} ejercicios más
               </div>
             )}
           </div>
         )}
-        {!athlete.currentWorkout && (
+        {!workout && (
           <div className="text-sm text-muted-foreground text-center py-4">
             Sin rutina asignada
           </div>

@@ -1,8 +1,8 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Users, Dumbbell, Activity, LogIn, UserRound, LayoutDashboard } from "lucide-react";
+import { Users, Dumbbell, Activity, LogIn, UserRound, LayoutDashboard, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -19,6 +19,17 @@ const Header = () => {
   const location = useLocation();
   const path = location.pathname;
   const { user, isAuthenticated, logout } = useAuth();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
 
   const handleTabChange = (value: string) => {
     navigate(value);
@@ -33,6 +44,19 @@ const Header = () => {
               <Activity className="w-6 h-6 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-bold">GymTrack Pro</h1>
+          </div>
+          
+          <div className="hidden sm:flex items-center justify-center flex-1">
+            <div className="flex items-center gap-2 text-lg font-semibold">
+              <Clock className="w-5 h-5" />
+              <span>
+                {currentTime.toLocaleTimeString("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })}
+              </span>
+            </div>
           </div>
           
           <div className="flex items-center gap-4">

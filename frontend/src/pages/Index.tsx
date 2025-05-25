@@ -4,22 +4,19 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SimplifiedAthleteCard from "@/components/SimplifiedAthleteCard";
 import AddAthleteDialog from "@/components/AddAthleteDialog";
-import { GymProvider } from "@/context/GymContext";
-import { useGym } from "@/context/GymContext";
+import { GymProvider, useGym } from "@/context/GymContext";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "@/components/ui/pagination";
+import { io, Socket } from "socket.io-client";
 
 const AUTO_SCROLL_INTERVAL = 10000; // 10 seconds
 
 const HomeContent = () => {
-  const { athletes } = useGym();
-  const activeAthletes = athletes.filter(
-    (athlete) => athlete.status === "active"
-  );
+  const { roomStatus } = useGym();
   const [currentPage, setCurrentPage] = useState(0);
   const [autoScroll, setAutoScroll] = useState(true);
   const autoScrollRef = useRef<NodeJS.Timeout | null>(null);
   const itemsPerPage = 9; // Adjust based on screen size
-  const totalPages = Math.ceil(activeAthletes.length / itemsPerPage);
+  const totalPages = Math.ceil(roomStatus.activeCount / itemsPerPage);
 
   const startAutoScroll = () => {
     if (autoScrollRef.current) clearInterval(autoScrollRef.current);
@@ -32,14 +29,18 @@ const HomeContent = () => {
   };
 
   useEffect(() => {
-    if (activeAthletes.length > itemsPerPage) {
+    if (roomStatus.activeCount > itemsPerPage) {
       startAutoScroll();
+    }
+
+    if (currentPage > totalPages - 1) {
+      setCurrentPage(0);
     }
     
     return () => {
       if (autoScrollRef.current) clearInterval(autoScrollRef.current);
     };
-  }, [autoScroll, activeAthletes.length, totalPages]);
+  }, [autoScroll, roomStatus.activeCount, totalPages]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -51,7 +52,7 @@ const HomeContent = () => {
     }, 30000);
   };
 
-  const currentAthletes = activeAthletes.slice(
+  const currentAthletes = roomStatus.sessions.slice(
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
   );
@@ -59,7 +60,7 @@ const HomeContent = () => {
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-        {activeAthletes.length === 0 ? (
+        {roomStatus.sessions.length === 0 ? (
           <div className="col-span-full p-6 bg-muted/40 rounded-lg text-center">
             <h3 className="text-lg font-medium text-muted-foreground">
               No hay atletas activos en este momento
@@ -70,7 +71,7 @@ const HomeContent = () => {
           </div>
         ) : (
           currentAthletes.map((athlete) => (
-            <SimplifiedAthleteCard key={athlete.id} athlete={athlete} />
+            <SimplifiedAthleteCard key={athlete.id} athlete={athlete.athlete} workout={athlete.workout} />
           ))
         )}
       </div>

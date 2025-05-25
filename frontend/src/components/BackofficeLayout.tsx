@@ -100,7 +100,7 @@ const BackofficeLayout: React.FC = () => {
               <SidebarMenuButton asChild className="w-full justify-start mb-2">
                 <Link to="/">
                   <Home size={18} />
-                  <span>Volver al inicio</span>
+                  <span>Volver a la sala</span>
                 </Link>
               </SidebarMenuButton>
               <SidebarMenuButton onClick={() => logout()} className="w-full justify-start text-destructive hover:text-destructive">
