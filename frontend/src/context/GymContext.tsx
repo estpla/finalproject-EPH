@@ -75,7 +75,7 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           id: athlete.id.toString(),
           name: athlete.name,
           email: athlete.email || '',
-          avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+          avatar: `https://i.pravatar.cc/150?img=${athlete.id}`,
           currentWorkout: athlete.assignedWorkout ? {
             id: athlete.assignedWorkout.id.toString(),
             name: athlete.assignedWorkout.name,
@@ -442,10 +442,16 @@ export const GymProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const assignWorkoutToAthlete = async (athleteId: string, workoutPlanId: string) => {
     try {
-      const response = await fetch(`/api/athletes/${athleteId}/assign-workout`, {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error('No se ha encontrado un token de autenticación.');
+      }
+
+      const response = await fetch(`${API_URL}/api/athletes/${athleteId}/assign-workout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ workoutId: workoutPlanId }),
       });

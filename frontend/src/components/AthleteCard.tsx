@@ -70,7 +70,7 @@ const AthleteCard: React.FC<AthleteCardProps> = ({ athlete }) => {
           <div className="relative">
             <div className="w-12 h-12 rounded-full overflow-hidden">
               <img
-                src={athlete.avatar || "https://i.pravatar.cc/150"}
+                src={athlete.avatar || `https://i.pravatar.cc/150?img=${athlete.id}`}
                 alt={athlete.name}
                 className="w-full h-full object-cover"
               />
