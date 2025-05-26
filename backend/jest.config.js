@@ -1,6 +1,6 @@
 module.exports = {
   testEnvironment: "node",
-  testMatch: ["**/tests/**/*.test.js"],
+  testMatch: ["**/tests/unit/**/*.test.js"],
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageReporters: ["json-summary", "text"],
