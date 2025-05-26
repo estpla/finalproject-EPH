@@ -76,5 +76,18 @@ describe("authMiddleware", () => {
       middleware(req, res, next);
       expect(next).toHaveBeenCalled();
     });
+    
+    it("debe retornar 403 si se usa el valor por defecto (array vacío) y el usuario tiene cualquier rol", () => {
+      req.user = { id: 1, role: "admin" };
+      const middleware = authMiddleware.checkRole(); // Usa array vacío por defecto
+      middleware(req, res, next);
+      
+      // Como el array vacío no incluye ningún rol, debe retornar 403
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "No tienes permiso para acceder a este recurso"
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
   });
 });

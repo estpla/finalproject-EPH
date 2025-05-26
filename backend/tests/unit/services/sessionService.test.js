@@ -68,6 +68,29 @@ describe("sessionService", () => {
         "El atleta no tiene un plan de entrenamiento asignado"
       );
     });
+    
+    it("should create a new session with correct position when active sessions exist", async () => {
+      const athlete = { id: 1, assignedWorkout: { id: 1 } };
+      const activeSessions = [
+        { id: 1, position: 0 },
+        { id: 2, position: 2 } // Posición no secuencial para probar Math.max
+      ];
+      const session = { id: 3, athleteId: 1, workoutId: 1, position: 3 };
+      
+      mockFindUnique.mockResolvedValueOnce(athlete);
+      mockFindMany.mockResolvedValueOnce(activeSessions);
+      mockCreate.mockResolvedValue(session);
+      mockUpdate.mockResolvedValue({ ...athlete, activeSessionId: 3 });
+      
+      const result = await sessionService.createSession(1);
+      
+      expect(result).toEqual(session);
+      expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          position: 3 // Debería ser el máximo (2) + 1
+        })
+      }));
+    });
   });
 
   describe("endSession", () => {

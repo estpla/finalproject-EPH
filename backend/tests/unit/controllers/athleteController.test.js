@@ -178,8 +178,50 @@ describe("Athlete Controller", () => {
       await athleteController.createAthlete(req, res, next);
       expect(next).toHaveBeenCalledWith(expect.any(Error));
     });
+    
+    it("debe crear un atleta sin email", async () => {
+      const athleteData = { name: "Atleta Sin Email" };
+      const mockCreatedAthlete = { id: 4, ...athleteData };
+      req.body = athleteData;
+      
+      athleteService.createAthlete.mockResolvedValue(mockCreatedAthlete);
+      
+      await athleteController.createAthlete(req, res, next);
+      
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(mockCreatedAthlete);
+      // Verificar que no se llamó a getAthleteByEmail
+      expect(athleteService.getAthleteByEmail).not.toHaveBeenCalled();
+    });
+    
+    it("debe crear un atleta con assignedWorkoutId", async () => {
+      const athleteData = { 
+        name: "Atleta Con Plan", 
+        email: "plan@example.com",
+        assignedWorkoutId: "5" // String para probar el parseInt
+      };
+      const mockCreatedAthlete = { 
+        id: 5, 
+        name: "Atleta Con Plan", 
+        email: "plan@example.com",
+        assignedWorkoutId: 5 // Número después de parseInt
+      };
+      req.body = athleteData;
+      
+      athleteService.getAthleteByEmail.mockResolvedValue(null);
+      athleteService.createAthlete.mockResolvedValue(mockCreatedAthlete);
+      
+      await athleteController.createAthlete(req, res, next);
+      
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(mockCreatedAthlete);
+      // Verificar que se llamó a createAthlete con el ID convertido a número
+      expect(athleteService.createAthlete).toHaveBeenCalledWith(expect.objectContaining({
+        assignedWorkoutId: 5 // Debe ser un número, no un string
+      }));
+    });
   });
-
+  
   describe("updateAthlete", () => {
     it("debe actualizar un atleta existente", async () => {
       req.params.id = "1";
@@ -200,6 +242,7 @@ describe("Athlete Controller", () => {
       await athleteController.updateAthlete(req, res, next);
       expect(res.json).toHaveBeenCalledWith(updatedAthlete);
     });
+
     it("debe retornar 404 si el atleta no existe", async () => {
       req.params.id = "999";
       athleteService.getAthleteById.mockResolvedValue(null);
@@ -207,6 +250,7 @@ describe("Athlete Controller", () => {
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({ error: "Atleta no encontrado" });
     });
+
     it("debe retornar 400 si el email ya está en uso por otro atleta", async () => {
       req.params.id = "1";
       req.body = { email: "usado@email.com" };
@@ -220,12 +264,93 @@ describe("Athlete Controller", () => {
         error: "El email ya está en uso por otro atleta",
       });
     });
+
     it("debe llamar a next en caso de error inesperado", async () => {
       req.params.id = "1";
       req.body = { name: "Nuevo Nombre", email: "nuevo@email.com" };
       athleteService.getAthleteById.mockRejectedValue(new Error("fail"));
       await athleteController.updateAthlete(req, res, next);
       expect(next).toHaveBeenCalledWith(expect.any(Error));
+    });
+
+    it("debe actualizar un atleta sin cambiar el email", async () => {
+      req.params.id = "1";
+      const existingAthlete = {
+        id: 1,
+        name: "Nombre Original",
+        email: "mismo@email.com"
+      };
+      req.body = {
+        name: "Nombre Actualizado",
+        email: "mismo@email.com" // Mismo email que ya tenía
+      };
+      const updatedAthlete = { id: 1, ...req.body };
+      
+      athleteService.getAthleteById.mockResolvedValue(existingAthlete);
+      athleteService.updateAthlete.mockResolvedValue(updatedAthlete);
+      
+      await athleteController.updateAthlete(req, res, next);
+      
+      expect(res.json).toHaveBeenCalledWith(updatedAthlete);
+      // Verificar que no se llamó a getAthleteByEmail
+      expect(athleteService.getAthleteByEmail).not.toHaveBeenCalled();
+    });
+
+    it("debe actualizar un atleta sin proporcionar email", async () => {
+      req.params.id = "1";
+      const existingAthlete = {
+        id: 1,
+        name: "Nombre Original",
+        email: "original@email.com"
+      };
+      req.body = {
+        name: "Nombre Actualizado"
+        // No incluimos email
+      };
+      const updatedAthlete = { 
+        id: 1, 
+        name: "Nombre Actualizado",
+        email: "original@email.com" // Mantiene el email original
+      };
+      
+      athleteService.getAthleteById.mockResolvedValue(existingAthlete);
+      athleteService.updateAthlete.mockResolvedValue(updatedAthlete);
+      
+      await athleteController.updateAthlete(req, res, next);
+      
+      expect(res.json).toHaveBeenCalledWith(updatedAthlete);
+      // Verificar que no se llamó a getAthleteByEmail
+      expect(athleteService.getAthleteByEmail).not.toHaveBeenCalled();
+    });
+    
+    it("debe actualizar un atleta con assignedWorkoutId", async () => {
+      req.params.id = "1";
+      const existingAthlete = {
+        id: 1,
+        name: "Nombre Original",
+        email: "original@email.com",
+        assignedWorkoutId: null
+      };
+      req.body = {
+        assignedWorkoutId: "10" // String para probar el parseInt
+      };
+      const updatedAthlete = { 
+        id: 1, 
+        name: "Nombre Original",
+        email: "original@email.com",
+        assignedWorkoutId: 10 // Número después de parseInt
+      };
+      
+      athleteService.getAthleteById.mockResolvedValue(existingAthlete);
+      athleteService.updateAthlete.mockResolvedValue(updatedAthlete);
+      
+      await athleteController.updateAthlete(req, res, next);
+      
+      expect(res.json).toHaveBeenCalledWith(updatedAthlete);
+      // Verificar que se llamó a updateAthlete con el ID convertido a número
+      expect(athleteService.updateAthlete).toHaveBeenCalledWith("1", expect.objectContaining({
+        assignedWorkoutId: 10 // Debe ser un número, no un string
+      }));
     });
   });
 

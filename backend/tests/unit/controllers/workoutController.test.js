@@ -175,7 +175,7 @@ describe("workoutController", () => {
       mockDeleteMany.mockResolvedValue();
       await workoutController.updateWorkout(mockReq, mockRes);
       expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({ 
         id: 1,
         name: "Test",
         description: "desc",

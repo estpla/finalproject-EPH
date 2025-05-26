@@ -58,6 +58,31 @@ describe('Socket.IO Server', () => {
     clientSocket.emit('progress:update', progressData);
   });
 
+  test('should handle error in progress:update event', (done) => {
+    const progressData = { exerciseId: 1, progress: 50 };
+    
+    // Forzar un error al emitir
+    const originalEmit = io.emit;
+    io.emit = jest.fn().mockImplementation(() => {
+      throw new Error('Error simulado');
+    });
+    
+    // Espiar console.error
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    clientSocket.emit('progress:update', progressData);
+    
+    setTimeout(() => {
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy.mock.calls[0][0]).toBe('Error al actualizar progreso:');
+      
+      // Restaurar funciones originales
+      io.emit = originalEmit;
+      consoleSpy.mockRestore();
+      done();
+    }, 50);
+  });
+
   test('should handle disconnect event', (done) => {
     clientSocket.on('disconnect', () => {
       expect(clientSocket.connected).toBe(false);
@@ -65,6 +90,15 @@ describe('Socket.IO Server', () => {
     });
     
     clientSocket.close();
+  });
+
+  test('should return io instance when initialized', () => {
+    // Importar el módulo de sockets
+    const sockets = require('../../../src/sockets');
+    
+    // Verificar que el getter devuelve la instancia de io
+    expect(sockets.io).toBeDefined();
+    expect(sockets.io).toBe(io);
   });
 
   test('should throw error when accessing uninitialized io', () => {
