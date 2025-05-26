@@ -33,5 +33,14 @@
   "prisma": {
     "schema": "src/prisma/schema.prisma",
     "seed": "node src/prisma/seed.js"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": [
+      "json-summary",
+      "text"
+    ],
+    "coverageDirectory": "coverage",
+    "testEnvironment": "node"
   }
 }
