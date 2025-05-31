@@ -1,6 +1,5 @@
-> Detalla en esta sección los prompts principales utilizados durante la creación del proyecto, que justifiquen el uso de asistentes de código en todas las fases del ciclo de vida del desarrollo. Esperamos un máximo de 3 por sección, principalmente los de creación inicial o  los de corrección o adición de funcionalidades que consideres más relevantes.
-Puedes añadir adicionalmente la conversación completa como link o archivo adjunto si así lo consideras
-
+> Detalla en esta sección los prompts principales utilizados durante la creación del proyecto, que justifiquen el uso de asistentes de código en todas las fases del ciclo de vida del desarrollo. Esperamos un máximo de 3 por sección, principalmente los de creación inicial o los de corrección o adición de funcionalidades que consideres más relevantes.
+> Puedes añadir adicionalmente la conversación completa como link o archivo adjunto si así lo consideras
 
 ## Índice
 
@@ -13,6 +12,9 @@ Puedes añadir adicionalmente la conversación completa como link o archivo adju
 7. [Pull requests](#7-pull-requests)
 8. [Extra - Sprint planning](#8-extra---sprint-planning)
 9. [Backend](#9-backend)
+10. [Frontend](#10-frontend)
+11. [Unit Testing](#11-unit-testing)
+12. [Integración Continua](#12-integración-continua)
 
 ---
 
@@ -51,11 +53,12 @@ Al utilizar este tipo de arquitectura elegida (cliente-servidor), dime porque es
 
 **Prompt 1:**
 
-Utilizando toda la información que tenemos hasta ahora. 
+Utilizando toda la información que tenemos hasta ahora.
 Eres un experto en infraestructura de software.
-Piensa que queremos utilizar una infraestructura de tipo cliente-servidor, y que queremos tener un backend y un frontend con 2 partes, una parte donde ver el estado de la sala y otra parte para la gestión de los datos (backoffice). 
+Piensa que queremos utilizar una infraestructura de tipo cliente-servidor, y que queremos tener un backend y un frontend con 2 partes, una parte donde ver el estado de la sala y otra parte para la gestión de los datos (backoffice).
 ¿Qué componentes arquitectónicos crees que serían necesarios?
 Ten en cuenta que va a ser para un MVP no muy grande y que las tecnologías que vamos a utilizar son las siguientes:
+
 - Backend: NodeJS, Express, PostgreSQL, Prisma.
 - Frontend: React, NextJS, Shadcn, Tailwindcss.
 
@@ -128,7 +131,7 @@ El resultado lo quiero en formato OpenAPI.
 
 **Prompt 1:**
 
-Actúa como Gestor de Producto y Analista de Negocio. 
+Actúa como Gestor de Producto y Analista de Negocio.
 Genera tres historias de usuario, las tres relacionadas con los 3 endpoints principales.
 Utiliza la siguiente plantilla para crear las historias de usuario:
 
@@ -164,8 +167,8 @@ Dadas las historias de usuario anteriores, ¿qué requisitos técnicos serían n
 
 **Prompt 1:**
 
-Actúa como Gestor de Producto y Analista de Negocio. 
-Dime de manera breve, y sin mucho detalle, cuales serían los 3 tickets de trabajo principales para el desarrollo del proyecto. 
+Actúa como Gestor de Producto y Analista de Negocio.
+Dime de manera breve, y sin mucho detalle, cuales serían los 3 tickets de trabajo principales para el desarrollo del proyecto.
 Quiero que me digas uno de backend, otro de frontend y otro relacionado con la base de datos.
 
 **Prompt 2:**
@@ -174,37 +177,45 @@ Ahora que ya tenemos los 3 tickets de trabajo principales, quiero que les expand
 
 ```md
 1. Título claro y conciso
-Un breve resumen que refleje la esencia de la tarea. Debe ser lo suficientemente descriptivo como para que cualquier miembro del equipo entienda rápidamente de qué trata el ticket.
+   Un breve resumen que refleje la esencia de la tarea. Debe ser lo suficientemente descriptivo como para que cualquier miembro del equipo entienda rápidamente de qué trata el ticket.
 
 2. Descripción detallada
-  - Propósito: Explicación de por qué es necesaria la tarea y qué problema resuelve.
-  - Detalles específicos: Información adicional sobre requisitos específicos, restricciones o condiciones necesarias para realizar la tarea.
+
+- Propósito: Explicación de por qué es necesaria la tarea y qué problema resuelve.
+- Detalles específicos: Información adicional sobre requisitos específicos, restricciones o condiciones necesarias para realizar la tarea.
 
 3. Criterios de aceptación
-  - Expectativas claras: Lista detallada de condiciones que deben cumplirse para que el trabajo del ticket se considere completo.
-  - Pruebas de validación: Pasos o pruebas específicas que deben realizarse para verificar que la tarea se ha completado correctamente.
+
+- Expectativas claras: Lista detallada de condiciones que deben cumplirse para que el trabajo del ticket se considere completo.
+- Pruebas de validación: Pasos o pruebas específicas que deben realizarse para verificar que la tarea se ha completado correctamente.
 
 4. Prioridad
-  - Nivel de urgencia: Una clasificación de la importancia y urgencia de la tarea, que ayuda a determinar el orden en que deben abordarse las tareas dentro del backlog.
+
+- Nivel de urgencia: Una clasificación de la importancia y urgencia de la tarea, que ayuda a determinar el orden en que deben abordarse las tareas dentro del backlog.
 
 5. Esfuerzo estimado
-  - Puntos de Historia o Tiempo Estimado: Una evaluación del tiempo o esfuerzo que se espera que lleve completar el ticket. Esto es esencial para la planificación del equipo y la gestión del tiempo.
+
+- Puntos de Historia o Tiempo Estimado: Una evaluación del tiempo o esfuerzo que se espera que lleve completar el ticket. Esto es esencial para la planificación del equipo y la gestión del tiempo.
 
 6. Asignar
 
-  - Responsable: Quién o qué equipo será responsable de completar la tarea. Esto garantiza que todos los implicados entiendan quién está a cargo de cada parte del proyecto.
+- Responsable: Quién o qué equipo será responsable de completar la tarea. Esto garantiza que todos los implicados entiendan quién está a cargo de cada parte del proyecto.
 
 7. Etiquetas
-  - Categorización: Etiquetas que ayudan a categorizar el ticket por tipo (bug, mejora, tarea, etc.), por característica del producto (UI, backend, etc.), o por sprint/versión.
+
+- Categorización: Etiquetas que ayudan a categorizar el ticket por tipo (bug, mejora, tarea, etc.), por característica del producto (UI, backend, etc.), o por sprint/versión.
 
 8. Comentarios y notas
-  - Colaboración: Espacio para que los miembros del equipo añadan información relevante, hagan preguntas o proporcionen actualizaciones sobre el progreso de la tarea.
+
+- Colaboración: Espacio para que los miembros del equipo añadan información relevante, hagan preguntas o proporcionen actualizaciones sobre el progreso de la tarea.
 
 9. Enlaces o referencias
-  - Documentación relacionada: Enlaces a documentos relacionados, diseños, especificaciones o tickets que proporcionan contexto adicional o información necesaria para la ejecución de la tarea.
+
+- Documentación relacionada: Enlaces a documentos relacionados, diseños, especificaciones o tickets que proporcionan contexto adicional o información necesaria para la ejecución de la tarea.
 
 10. Historial de cambios
-  - Seguimiento de cambios: Un registro de todos los cambios realizados en el ticket, incluyendo actualizaciones de estado, reasignaciones y modificaciones de detalles o prioridades.
+
+- Seguimiento de cambios: Un registro de todos los cambios realizados en el ticket, incluyendo actualizaciones de estado, reasignaciones y modificaciones de detalles o prioridades.
 ```
 
 ---
@@ -224,6 +235,8 @@ Un breve resumen que refleje la esencia de la tarea. Debe ser lo suficientemente
 **Prompt 1:**
 
 Ahora dame hora una planificación por sprint para el proyecto.
+
+---
 
 ### 9. Backend
 
@@ -253,3 +266,115 @@ Continuemos ahora con las rutas de atletas. Recuerda actualizar el fichero backe
 **Prompt 4:**
 
 Continuemos ahora con las rutas de workouts. Recuerda actualizar el fichero backend/README.md con los cambios que realices. README.md
+
+---
+
+### 10. Frontend
+
+**Prompt 1:**
+
+Model: https://lovable.dev/
+
+Eres un experto en proyectos React de frontend. Basándote en toda la información que hay en el fichero README.md, quiero empezar la estructura del proyecto frontend en la carpeta "frontend/". 
+
+Importante que tenga los siguientes componentes:
+
+- Javascript
+- React
+- Tailwindcss
+- Shadcn
+
+Quiero que hagas una buena separación de ficheros/carpetas, mira en el fichero README.md para ello.
+
+**Prompt 2:**
+
+Continuemos con la parte de trabajar con los planes de entrenamiento. Si hace falta, apoyate en los siguientes endpoints:
+
+### Endpoints de Workouts (Planes de entrenamiento)
+
+- `GET /api/workouts` - Obtener todos los planes de entrenamiento
+- `GET /api/workouts/:id` - Obtener un plan de entrenamiento por ID
+- `POST /api/workouts` - Crear un nuevo plan de entrenamiento
+- `PUT /api/workouts/:id` - Actualizar un plan de entrenamiento existente
+- `DELETE /api/workouts/:id` - Eliminar un plan de entrenamiento
+
+**Prompt 3:**
+
+La parte de "Atletas" y "Rutinas", deben de estar en una especie de backoffice, ya que deben de estar protegido por un Login.
+
+La parte de "Activos" si se debe mantener como ruta principal no protegida.
+
+Por lo tanto necesitamos una pantalla de "Login" y "Registro", apoyate en los siguientes endpoints:
+
+### Endpoints de autenticación
+
+- POST /api/auth/login - Iniciar sesión de usuario
+- POST /api/auth/register - Registrar nuevo usuario
+- POST /api/auth/logout - Cerrar sesión de usuario
+- GET /api/auth/me - Obtener usuario actual (requiere autenticación con JWT)
+
+---
+
+### 11. Unit Testing
+
+**Prompt 1:**
+
+Eres un experto en testing de backend. 
+Quiero que añadamos test unitarios para todos los controllers @controllers y @services del backend services.
+Para ello utilizaremos Jest. 
+Crea un archivo de test para cada uno de los controllers y services.
+Ves uno a uno y explica que test se van a realizar y como se van a realizar.
+
+**Prompt 2:**
+
+Añade tests unitarios para los websockets @index.js a la carpeta /backend/tests/units/sockets
+
+**Prompt 3:**
+
+Podrías sacar toda la cobertura de este test sessionService.test.js sessionService.js
+
+El coverage me dice esto
+
+-------------------------|---------|----------|---------|---------|-------------------
+File                     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+-------------------------|---------|----------|---------|---------|-------------------
+sessionService.js      |   97.36 |    91.66 |    90.9 |   97.22 | 44
+-------------------------|---------|----------|---------|---------|-------------------
+
+---
+
+### 12. Integración Continua
+
+**Prompt 1:**
+
+Eres un experto en integración continua.
+Quiero una Github action que lance los tests del backend cada vez que se realiza una PR y muestre los resultado del coverage en una tabla en la PR.
+Apoyate en el fihcero @backend/package.json 
+
+**Prompt 2:**
+
+He recibido el siguiente error:
+
+```bash
+FAIL tests/integration/routes.test.js
+  ● Console
+    console.error
+      PrismaClientInitializationError: 
+      Invalid `prisma.athlete.findMany()` invocation in
+      /home/runner/work/finalproject-EPH/finalproject-EPH/backend/src/services/athleteService.js:8:27
+      
+        5 const athleteService = {
+        6   // Obtener todos los atletas
+        7   async getAllAthletes() {
+      → 8     return prisma.athlete.findMany(
+      error: Environment variable not found: DATABASE_URL.
+        -->  schema.prisma:10
+         | 
+       9 |   provider = "postgresql"
+      10 |   url      = env("DATABASE_URL")
+         | 
+```
+
+Porque está tratando de utilizar los test de integración, pero solo debería utilizar los test unitarios.
+
+---
