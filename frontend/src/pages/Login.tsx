@@ -24,8 +24,8 @@ const Login = () => {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: "admin@gymflow.com",
+      password: "admin123",
     },
   });
 
@@ -83,6 +83,13 @@ const Login = () => {
                     </FormItem>
                   )}
                 />
+                <div className="bg-muted/50 p-4 rounded-lg text-sm text-muted-foreground">
+                  <p className="font-medium mb-2">Credenciales de prueba:</p>
+                  <div className="space-y-1">
+                    <p><strong>Admin:</strong> admin@gymflow.com / admin123</p>
+                    <p><strong>Entrenador:</strong> coach@gymflow.com / coach123</p>
+                  </div>
+                </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   <LogIn className="mr-2 h-4 w-4" />
                   {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}

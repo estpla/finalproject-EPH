@@ -28,9 +28,7 @@ Se trata de una aplicación en tiempo real para gimnasios, diseñada para gestio
 
 ### **0.4. URL del proyecto:**
 
-https://
-
-> Puede ser pública o privada, en cuyo caso deberás compartir los accesos de manera segura. Puedes enviarlos a [alvaro@lidr.co](mailto:alvaro@lidr.co) usando algún servicio como [onetimesecret](https://onetimesecret.com/).
+https://finalproject-eph-frontend.onrender.com/
 
 ### 0.5. URL o archivo comprimido del repositorio
 
@@ -94,11 +92,191 @@ El objetivo del sistema es optimizar la gestión de entrenamientos en tiempo rea
 
 ### **1.3. Diseño y experiencia de usuario:**
 
-> Proporciona imágenes y/o videotutorial mostrando la experiencia del usuario desde que aterriza en la aplicación, pasando por todas las funcionalidades principales.
+A continuación se muestra el flujo completo de la aplicación a través de capturas de pantalla:
+
+#### **1.3.1. Vista de Sala**
+
+*Vista de Sala - Estado Desconectado*
+![Vista de Sala - Desconectado](screenshots/Sala-Disconnected.png)
+
+*Vista de Sala - Estado Conectado*
+![Vista de Sala - Conectado](screenshots/Sala-Connected.png)
+
+#### **1.3.2. Dashboard Principal**
+
+*Panel de Control Principal*
+![Dashboard](screenshots/Dashboard.png)
+
+#### **1.3.3. Gestión de Atletas**
+
+*Lista de Atletas*
+![Atletas - Home](screenshots/Atletas-Home.png)
+
+*Crear Nuevo Atleta*
+![Atletas - Nuevo](screenshots/Atletas-New.png)
+
+*Editar Atleta*
+![Atletas - Editar](screenshots/Atletas-Edit.png)
+
+*Eliminar Atleta*
+![Atletas - Eliminar](screenshots/Atletas-Delete.png)
+
+#### **1.3.4. Gestión de Rutinas**
+
+*Lista de Rutinas*
+![Rutinas - Home](screenshots/Rutinas-Home.png)
+
+*Crear Nueva Rutina*
+![Rutinas - Nueva](screenshots/Rutinas-New.png)
+
+*Editar Rutina*
+![Rutinas - Editar](screenshots/Rutinas-Edit.png)
+
+*Eliminar Rutina*
+![Rutinas - Eliminar](screenshots/Rutinas-Delete.png)
+
+#### **1.3.5. Gestión de Sala**
+
+*Vista Principal de Gestión (admite Drag & Drop)*
+![Management Sala - Home](screenshots/Management%20Sala-Home.png)
+
+*Añadir Atleta a Sala*
+![Management Sala - Añadir Atleta](screenshots/Management%20Sala-Add%20Atleta.png)
+
+*Selección de Rutina*
+![Management Sala - Seleccionar Rutina](screenshots/Management%20Sala-Select%20Rutina.png)
 
 ### **1.4. Instrucciones de instalación:**
 
-> Documenta de manera precisa las instrucciones para instalar y poner en marcha el proyecto en local (librerías, backend, frontend, servidor, base de datos, migraciones y semillas de datos, etc.)
+Sigue estos pasos para instalar y ejecutar el proyecto en tu entorno local:
+
+#### **1.4.1. Requisitos previos**
+
+- Docker y Docker Compose
+- Node.js (v18 o superior)
+- npm o yarn
+- Git
+
+#### **1.4.2. Clonar el repositorio**
+
+```bash
+git clone https://github.com/estpla/finalproject-EPH.git
+cd finalproject-EPH
+```
+
+#### **1.4.3. Configuración de variables de entorno**
+
+1. Backend (.env)
+```bash
+cd backend
+cp .env.example .env
+```
+
+Edita el archivo `.env` con tus configuraciones:
+
+```env
+# Database
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/gymflow?schema=public"
+
+# JWT
+JWT_SECRET="tu_secreto_jwt_aqui"
+JWT_EXPIRATION="24h"
+
+# Server
+PORT=3001
+NODE_ENV="development"
+
+# CORS
+FRONTEND_URL="http://localhost:3000"
+```
+
+2. Frontend (.env.local)
+```bash
+cd ../frontend
+cp .env.example .env.local
+```
+
+Edita el archivo `.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL="http://localhost:3001"
+NEXT_PUBLIC_WS_URL="ws://localhost:3001"
+```
+
+#### **1.4.4. Arranque de Docker Compose**
+
+Desde la raíz del proyecto:
+
+```bash
+docker-compose up -d
+```
+
+Esto iniciará el contenedor de PostgreSQL en el puerto 5432.
+
+#### **1.4.5. Instalación y configuración del Backend**
+
+```bash
+cd backend
+
+# Instalar dependencias
+npm install
+
+# Ejecutar migraciones de Prisma
+npx prisma migrate dev
+
+# Generar cliente de Prisma
+npx prisma generate
+
+# Ejecutar seed de datos
+npx prisma db seed
+
+# Iniciar servidor en modo desarrollo
+npm run dev
+```
+
+#### **1.4.6. Instalación y arranque del Frontend**
+
+```bash
+cd ../frontend
+
+# Instalar dependencias
+npm install
+
+# Iniciar servidor de desarrollo
+npm run dev
+```
+
+#### **1.4.7. Verificación**
+
+1. Backend API: http://localhost:3001
+2. Frontend App: http://localhost:3000
+3. Base de datos: PostgreSQL corriendo en localhost:5432
+
+#### **1.4.8. Credenciales por defecto**
+
+Después del seed, puedes acceder con:
+
+- **Admin**:
+  - Email: admin@gymflow.com
+  - Password: admin123
+
+- **Entrenador**:
+  - Email: coach@gymflow.com
+  - Password: coach123
+
+#### **1.4.9. Comandos útiles**
+
+```bash
+# Reiniciar la base de datos
+cd backend
+npx prisma migrate reset
+
+# Ver la base de datos con Prisma Studio
+npx prisma studio
+
+# Ejecutar tests
+npm run test
+```
 
 ---
 
@@ -1333,9 +1511,21 @@ Response:
 
 **Pull Request 1**
 
+Esta PR implementa el backend completo para la aplicación GymTrack Pro, proporcionando una API RESTful robusta para gestionar atletas, planes de entrenamiento, sesiones de entrenamiento y autenticación de usuarios.
+
+[✨ Implementación del Backend para GymTrack Pro #1](https://github.com/estpla/finalproject-EPH/pull/1)
+
 **Pull Request 2**
 
+Esta PR implementa la interfaz de usuario completa para la aplicación GymTrack Pro, proporcionando una experiencia de usuario intuitiva y moderna para la gestión de atletas, planes de entrenamiento y monitoreo de sala en tiempo real.
+
+[✨ Implementación del Frontend para GymTrack Pro #2](https://github.com/estpla/finalproject-EPH/pull/2)
+
 **Pull Request 3**
+
+Esta PR implementa la funcionalidad principal de gestión de sala en tiempo real para GymFlow, permitiendo el seguimiento y control de atletas activos en el gimnasio. Se han realizado cambios tanto en el backend como en el frontend para soportar esta característica clave.
+
+[🚀 Implementación del sistema de gestión de sala en tiempo real #5](https://github.com/estpla/finalproject-EPH/pull/5)
 
 ---
 
